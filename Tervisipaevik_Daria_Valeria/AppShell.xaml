@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="Tervisipaevik_Daria_Valeria.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Tervisipaevik_Daria_Valeria"
+    Shell.FlyoutBehavior="Disabled"
+    Title="Tervisipaevik_Daria_Valeria">
+
+    <ShellContent
+        Title="Home"
+        ContentTemplate="{DataTemplate local:Startpage}"
+        Route="Startpage" />
+
+</Shell>
