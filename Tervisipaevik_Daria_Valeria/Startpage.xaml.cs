@@ -4,8 +4,8 @@ namespace Tervisipaevik_Daria_Valeria;
 
 public partial class Startpage : ContentPage
 {
-    public List<ContentPage> lehed = new List<ContentPage>() { new TreeningudPage() };
-    public List<string> tekstid = new List<string> { "Tee lahti TreeningudPage" };
+    public List<ContentPage> lehed = new List<ContentPage>() { new TreeningudPage(), new EnesetunnePage(), new MeeldetuletusedPage(), new VeejalgiminePage()};
+    public List<string> tekstid = new List<string> { "Tee lahti TreeningudPage", "Tee lahti EnesetunnePage", "Tee lahti MeeldetuletusedPage", "Tee lahti VeejalgiminePage" };
     ScrollView sv;
     VerticalStackLayout vsl;
     public Startpage()
