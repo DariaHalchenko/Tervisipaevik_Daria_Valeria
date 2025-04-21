@@ -1,4 +1,4 @@
-using Tervisipaevik_Daria_Valeria.Database;
+ï»¿using Tervisipaevik_Daria_Valeria.Database;
 using Tervisipaevik_Daria_Valeria.Models;
 
 namespace Tervisipaevik_Daria_Valeria.View;
@@ -24,7 +24,7 @@ public partial class TreeningudPage : ContentPage
         Title = "Treeningud";
 
         e_nimi = new Entry { Placeholder = "Treeningu nimi" };
-        e_tuup = new Entry { Placeholder = "Treeningu tüüp" };
+        e_tuup = new Entry { Placeholder = "Treeningu tÃ¼Ã¼p" };
         e_sammude = new Entry { Placeholder = "Sammude arv", Keyboard = Keyboard.Numeric };
         e_kalorid = new Entry { Placeholder = "Kulutatud kalorid", Keyboard = Keyboard.Numeric };
         dp_kuupaev = new DatePicker { Date = DateTime.Now };
