@@ -32,11 +32,11 @@ public partial class EnesetunnePage : ContentPage
 
         // TUJU (эмоции)
         tujuLayout = new StackLayout { Orientation = StackOrientation.Horizontal };
-        for (int i = 1; i <= 5; i++)
+        for (int i = 1; i <= 6; i++)
         {
             var img = new Image
             {
-                Source = $"tuju{i}.jpg",
+                Source = $"tuju{i}.PNG",
                 HeightRequest = 40,
                 WidthRequest = 40
             };
