@@ -98,9 +98,6 @@
 	  <MauiXaml Update="View\OhtusookPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="View\ToidukorradPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
 	  <MauiXaml Update="View\TreeningudPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

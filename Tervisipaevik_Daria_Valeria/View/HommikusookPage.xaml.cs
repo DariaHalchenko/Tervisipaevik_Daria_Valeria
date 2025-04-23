@@ -15,7 +15,7 @@ public partial class HommikusookPage : ContentPage
 
     HommikusookClass selectedItem;
     public HommikusookPage()
-	{
+    {
         string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tervisepaevik.db");
         database = new HommikusookDatabase(dbPath);
 
@@ -56,10 +56,10 @@ public partial class HommikusookPage : ContentPage
                 Padding = 20,
                 Children =
                     {
-                        e_roaNimi, 
-                        e_valgud, 
-                        e_rasvad, 
-                        e_susivesikud, 
+                        e_roaNimi,
+                        e_valgud,
+                        e_rasvad,
+                        e_susivesikud,
                         e_kalorid,
                         dp_kuupaev,
                         tp_kallaaeg,
@@ -115,7 +115,7 @@ public partial class HommikusookPage : ContentPage
         if (selectedItem != null)
         {
             e_roaNimi.Text = selectedItem.Roa_nimi;
-            e_valgud.Text = selectedItem.Valgud.ToString();  
+            e_valgud.Text = selectedItem.Valgud.ToString();
             e_rasvad.Text = selectedItem.Rasvad.ToString();
             e_susivesikud.Text = selectedItem.Susivesikud.ToString();
             e_kalorid.Text = selectedItem.Kalorid.ToString();
@@ -133,7 +133,7 @@ public partial class HommikusookPage : ContentPage
     public void ClearForm()
     {
         selectedItem = null;
-        e_roaNimi.Text = string.Empty;  
+        e_roaNimi.Text = string.Empty;
         e_valgud.Text = string.Empty;
         e_rasvad.Text = string.Empty;
         e_susivesikud.Text = string.Empty;
