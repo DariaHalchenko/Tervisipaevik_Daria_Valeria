@@ -7,15 +7,17 @@ using SQLite;
 
 namespace Tervisipaevik_Daria_Valeria.Models
 {
-    [Table("Toidukorrad")]
-    public class ToidukorradClass
+    [Table("Vahepala")]
+    public class VahepalaClass
     {
         [PrimaryKey, AutoIncrement, Column("_id")]
-        public int Toidukorrad_id { get; set; }
-        public string Tuup { get; set; } // Hommikusook, Ohtusook, Vahepala, Louna
-        public string Roa_nimi { get; set; }
+        public int Vahepala_id { get; set; }
         public DateTime Kuupaev { get; set; }
+        public TimeSpan Kallaaeg { get; set; }
+        public string Roa_nimi { get; set; }
+        public int Valgud { get; set; }
+        public int Rasvad { get; set; }
+        public int Susivesikud { get; set; }
         public int Kalorid { get; set; }
-
     }
 }

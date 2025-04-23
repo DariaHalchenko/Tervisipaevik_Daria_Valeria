@@ -60,16 +60,16 @@
 	  <None Remove="Resources\Images\hommikusook.jpg" />
 	  <None Remove="Resources\Images\louna.jpg" />
 	  <None Remove="Resources\Images\ohtusook.jpg" />
-	  <None Remove="Resources\Images\tuju1.PNG" />
-	  <None Remove="Resources\Images\tuju2.PNG" />
-	  <None Remove="Resources\Images\tuju3.PNG" />
-	  <None Remove="Resources\Images\tuju4.PNG" />
-	  <None Remove="Resources\Images\tuju5.PNG" />
-	  <None Remove="Resources\Images\tuju6.PNG" />
+	  <None Remove="Resources\Images\tuju1.jpg" />
+	  <None Remove="Resources\Images\tuju2.jpg" />
+	  <None Remove="Resources\Images\tuju3.jpg" />
+	  <None Remove="Resources\Images\tuju4.jpg" />
+	  <None Remove="Resources\Images\tuju5.jpg" />
 	  <None Remove="Resources\Images\vahepala.jpg" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Aardvark.Base.FSharp" Version="5.3.9" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
@@ -95,10 +95,16 @@
 	  <MauiXaml Update="View\MeeldetuletusedPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="View\OhtusookPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="View\ToidukorradPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="View\TreeningudPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="View\VahepalaPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="View\VeejalgiminePage.xaml">
