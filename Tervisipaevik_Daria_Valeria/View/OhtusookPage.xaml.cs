@@ -1,146 +1,261 @@
 ﻿using Tervisipaevik_Daria_Valeria.Database;
 using Tervisipaevik_Daria_Valeria.Models;
 
-namespace Tervisipaevik_Daria_Valeria.View;
-
-public partial class OhtusookPage : ContentPage
+namespace Tervisipaevik_Daria_Valeria.View
 {
-    OhtusookDatabase database;
-
-    ListView ohtusookListView;
-    Entry e_roaNimi, e_valgud, e_rasvad, e_susivesikud, e_kalorid;
-    DatePicker dp_kuupaev;
-    TimePicker tp_kallaaeg;
-    Button btn_salvesta, btn_kustuta, clearButton;
-
-    OhtusookClass selectedItem;
-    public OhtusookPage()
+    public partial class OhtusookPage : ContentPage
     {
-        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tervisepaevik.db");
-        database = new OhtusookDatabase(dbPath);
+        private OhtusookDatabase database;
+        private OhtusookClass selectedItem;
 
-        Title = "Õhtusöök";
+        private EntryCell ec_roaNimi, ec_valgud, ec_rasvad, ec_susivesikud, ec_kalorid;
+        private DatePicker dp_kuupaev;
+        private TimePicker tp_kallaaeg;
 
-        e_roaNimi = new Entry { Placeholder = "Roa nimi" };
-        e_valgud = new Entry { Placeholder = "Valgud", Keyboard = Keyboard.Numeric };
-        e_rasvad = new Entry { Placeholder = "Rasvad", Keyboard = Keyboard.Numeric };
-        e_susivesikud = new Entry { Placeholder = "S�sivesikud", Keyboard = Keyboard.Numeric };
-        e_kalorid = new Entry { Placeholder = "Kalorid", Keyboard = Keyboard.Numeric };
-        dp_kuupaev = new DatePicker { Date = DateTime.Now };
-        tp_kallaaeg = new TimePicker { Time = TimeSpan.FromHours(12) };
+        private Button btn_salvesta, btn_kustuta, btn_puhastada, btn_pildista, btn_valifoto;
 
-        btn_salvesta = new Button { Text = "Salvesta" };
-        btn_kustuta = new Button { Text = "Kustuta", IsVisible = false };
-        clearButton = new Button { Text = "Uus sisestus" };
+        private ImageCell ic;
+        private TableSection fotoSection;
 
-        ohtusookListView = new ListView
+        private ListView ohtusookListView;
+        private byte[] fotoBytes;
+        private string lisafoto;
+
+        private TableView tableView;
+
+        public OhtusookPage()
         {
-            ItemTemplate = new DataTemplate(() =>
-            {
-                var textCell = new TextCell();
-                textCell.SetBinding(TextCell.TextProperty, "Roa_nimi");
-                textCell.SetBinding(TextCell.DetailProperty, new Binding("Kuupaev", stringFormat: "{0:d}"));
-                return textCell;
-            })
-        };
+            string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tervisepaevik.db");
+            database = new OhtusookDatabase(dbPath);
 
-        ohtusookListView.ItemSelected += OhtusookListView_ItemSelected;
-        btn_salvesta.Clicked += Btn_salvesta_Clicked;
-        btn_kustuta.Clicked += Btn_kustuta_Clicked;
-        clearButton.Clicked += ClearButton_Clicked;
+            Title = "Õhtusöök";
 
-        Content = new ScrollView
-        {
-            Content = new StackLayout
+            // Ввод
+            ec_roaNimi = new EntryCell { Label = "Roa nimi", Placeholder = "nt. Kartul" };
+            ec_valgud = new EntryCell { Label = "Valgud", Placeholder = "g", Keyboard = Keyboard.Numeric };
+            ec_rasvad = new EntryCell { Label = "Rasvad", Placeholder = "g", Keyboard = Keyboard.Numeric };
+            ec_susivesikud = new EntryCell { Label = "Süsivesikud", Placeholder = "g", Keyboard = Keyboard.Numeric };
+            ec_kalorid = new EntryCell { Label = "Kalorid", Placeholder = "kcal", Keyboard = Keyboard.Numeric };
+
+            dp_kuupaev = new DatePicker { Date = DateTime.Now };
+            tp_kallaaeg = new TimePicker { Time = TimeSpan.FromHours(18) };
+
+            // Кнопки
+            btn_salvesta = new Button { Text = "Salvesta" };
+            btn_kustuta = new Button { Text = "Kustuta", IsVisible = false };
+            btn_puhastada = new Button { Text = "Uus sisestus" };
+            btn_pildista = new Button { Text = "Tee foto" };
+            btn_valifoto = new Button { Text = "Vali foto" };
+
+            btn_salvesta.Clicked += Btn_salvesta_Clicked;
+            btn_kustuta.Clicked += Btn_kustuta_Clicked;
+            btn_puhastada.Clicked += Btn_puhastada_Clicked;
+            btn_pildista.Clicked += Btn_pildista_Clicked;
+            btn_valifoto.Clicked += Btn_valifoto_Clicked;
+
+            // Фото
+            ic = new ImageCell
             {
-                Padding = 20,
-                Children =
+                Text = "Foto nimetus",
+                Detail = "Toidupilt"
+            };
+
+            fotoSection = new TableSection("Foto");
+
+            // Таблица ввода
+            tableView = new TableView
+            {
+                Intent = TableIntent.Form,
+                Root = new TableRoot("Sisesta õhtusöök")
+                {
+                    new TableSection("Üldandmed")
                     {
-                        e_roaNimi,
-                        e_valgud,
-                        e_rasvad,
-                        e_susivesikud,
-                        e_kalorid,
-                        dp_kuupaev,
-                        tp_kallaaeg,
-                        btn_salvesta,
-                        btn_kustuta,
-                        clearButton,
+                        new ViewCell { View = dp_kuupaev },
+                        new ViewCell { View = tp_kallaaeg },
+                        ec_roaNimi,
+                        ec_valgud,
+                        ec_rasvad,
+                        ec_susivesikud,
+                        ec_kalorid
+                    },
+                    fotoSection,
+                    new TableSection("Tegevused")
+                    {
+                        new ViewCell
+                        {
+                            View = new StackLayout
+                            {
+                                Orientation = StackOrientation.Horizontal,
+                                HorizontalOptions = LayoutOptions.Center,
+                                Children = { btn_salvesta, btn_kustuta, btn_puhastada }
+                            }
+                        }
+                    },
+                    new TableSection("Foto")
+                    {
+                        new ViewCell
+                        {
+                            View = new StackLayout
+                            {
+                                Orientation = StackOrientation.Horizontal,
+                                HorizontalOptions = LayoutOptions.Center,
+                                Children = { btn_valifoto, btn_pildista }
+                            }
+                        }
+                    }
+                }
+            };
+
+            // Список
+            ohtusookListView = new ListView
+            {
+                ItemTemplate = new DataTemplate(() =>
+                {
+                    var textCell = new TextCell();
+                    textCell.SetBinding(TextCell.TextProperty, "Roa_nimi");
+                    textCell.SetBinding(TextCell.DetailProperty, new Binding("Kuupaev", stringFormat: "{0:d}"));
+                    return textCell;
+                }),
+                HeightRequest = 250
+            };
+
+            ohtusookListView.ItemSelected += OhtusookListView_ItemSelected;
+
+            Content = new ScrollView
+            {
+                Content = new StackLayout
+                {
+                    Padding = 10,
+                    Children =
+                    {
+                        tableView,
+                        new Label { Text = "Salvestatud õhtusöögid", FontAttributes = FontAttributes.Bold },
                         ohtusookListView
                     }
-            }
-        };
+                }
+            };
 
-        LoadData();
+            LoadData();
+        }
 
-    }
-
-    private void ClearButton_Clicked(object? sender, EventArgs e)
-    {
-        ClearForm();
-    }
-
-    private void Btn_kustuta_Clicked(object? sender, EventArgs e)
-    {
-        if (selectedItem != null)
+        private async void Btn_pildista_Clicked(object sender, EventArgs e)
         {
-            database.DeleteOhtusook(selectedItem.Ohtusook_id);
+            if (MediaPicker.Default.IsCaptureSupported)
+            {
+                FileResult foto = await MediaPicker.Default.CapturePhotoAsync();
+                await SalvestaFoto(foto);
+            }
+            else
+            {
+                await Shell.Current.DisplayAlert("Viga", "Seade ei toeta pildistamist", "OK");
+            }
+        }
+
+        private async void Btn_valifoto_Clicked(object sender, EventArgs e)
+        {
+            FileResult foto = await MediaPicker.Default.PickPhotoAsync();
+            await SalvestaFoto(foto);
+        }
+
+        private async Task SalvestaFoto(FileResult foto)
+        {
+            if (foto != null)
+            {
+                lisafoto = Path.Combine(FileSystem.CacheDirectory, foto.FileName);
+
+                using Stream sourceStream = await foto.OpenReadAsync();
+                using MemoryStream ms = new MemoryStream();
+                await sourceStream.CopyToAsync(ms);
+                fotoBytes = ms.ToArray();
+
+                File.WriteAllBytes(lisafoto, fotoBytes);
+                ic.ImageSource = ImageSource.FromFile(lisafoto);
+
+                fotoSection.Clear();
+                fotoSection.Add(ic);
+
+                await Shell.Current.DisplayAlert("Edu", "Foto salvestatud", "OK");
+            }
+        }
+
+        private void Btn_salvesta_Clicked(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(ec_roaNimi.Text)) return;
+
+            if (selectedItem == null)
+                selectedItem = new OhtusookClass();
+
+            selectedItem.Roa_nimi = ec_roaNimi.Text;
+            selectedItem.Valgud = int.TryParse(ec_valgud.Text, out int valgud) ? valgud : 0;
+            selectedItem.Rasvad = int.TryParse(ec_rasvad.Text, out int rasvad) ? rasvad : 0;
+            selectedItem.Susivesikud = int.TryParse(ec_susivesikud.Text, out int susivesikud) ? susivesikud : 0;
+            selectedItem.Kalorid = int.TryParse(ec_kalorid.Text, out int kalorid) ? kalorid : 0;
+            selectedItem.Kuupaev = dp_kuupaev.Date;
+            selectedItem.Kallaaeg = tp_kallaaeg.Time;
+
+            if (fotoBytes != null)
+                selectedItem.Toidu_foto = fotoBytes;
+
+            database.SaveOhtusook(selectedItem);
             ClearForm();
             LoadData();
         }
-    }
 
-    private void Btn_salvesta_Clicked(object? sender, EventArgs e)
-    {
-        if (string.IsNullOrWhiteSpace(e_roaNimi.Text)) return;
-
-        if (selectedItem == null)
-            selectedItem = new OhtusookClass();
-        selectedItem.Roa_nimi = e_roaNimi.Text;
-        selectedItem.Valgud = int.TryParse(e_valgud.Text, out int valgud) ? valgud : 0;
-        selectedItem.Rasvad = int.TryParse(e_rasvad.Text, out int rasvad) ? rasvad : 0;
-        selectedItem.Susivesikud = int.TryParse(e_susivesikud.Text, out int susivesikud) ? susivesikud : 0;
-        selectedItem.Kalorid = int.TryParse(e_kalorid.Text, out int kalorid) ? kalorid : 0;
-        selectedItem.Kuupaev = dp_kuupaev.Date;
-        selectedItem.Kallaaeg = tp_kallaaeg.Time;
-
-        database.SaveOhtusook(selectedItem);
-        ClearForm();
-        LoadData();
-    }
-
-    private void OhtusookListView_ItemSelected(object? sender, SelectedItemChangedEventArgs e)
-    {
-        selectedItem = e.SelectedItem as OhtusookClass;
-        if (selectedItem != null)
+        private void Btn_kustuta_Clicked(object sender, EventArgs e)
         {
-            e_roaNimi.Text = selectedItem.Roa_nimi;
-            e_valgud.Text = selectedItem.Valgud.ToString();
-            e_rasvad.Text = selectedItem.Rasvad.ToString();
-            e_susivesikud.Text = selectedItem.Susivesikud.ToString();
-            e_kalorid.Text = selectedItem.Kalorid.ToString();
+            if (selectedItem != null)
+            {
+                database.DeleteOhtusook(selectedItem.Ohtusook_id);
+                ClearForm();
+                LoadData();
+            }
+        }
+
+        private void Btn_puhastada_Clicked(object sender, EventArgs e) => ClearForm();
+
+        private void OhtusookListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
+        {
+            selectedItem = e.SelectedItem as OhtusookClass;
+            if (selectedItem == null) return;
+
+            ec_roaNimi.Text = selectedItem.Roa_nimi;
+            ec_valgud.Text = selectedItem.Valgud.ToString();
+            ec_rasvad.Text = selectedItem.Rasvad.ToString();
+            ec_susivesikud.Text = selectedItem.Susivesikud.ToString();
+            ec_kalorid.Text = selectedItem.Kalorid.ToString();
             dp_kuupaev.Date = selectedItem.Kuupaev;
             tp_kallaaeg.Time = selectedItem.Kallaaeg;
             btn_kustuta.IsVisible = true;
+
+            if (selectedItem.Toidu_foto != null && selectedItem.Toidu_foto.Length > 0)
+            {
+                string tempPath = Path.Combine(FileSystem.CacheDirectory, "temp_ohtusook.jpg");
+                File.WriteAllBytes(tempPath, selectedItem.Toidu_foto);
+                ic.ImageSource = ImageSource.FromFile(tempPath);
+                fotoSection.Clear();
+                fotoSection.Add(ic);
+            }
+            else
+            {
+                fotoSection.Clear();
+            }
         }
-    }
 
-    public void LoadData()
-    {
-        ohtusookListView.ItemsSource = database.GetOhtusook().OrderByDescending(t => t.Kuupaev).ToList();
-    }
+        private void LoadData()
+        {
+            ohtusookListView.ItemsSource = database.GetOhtusook().OrderByDescending(x => x.Kuupaev).ToList();
+        }
 
-    public void ClearForm()
-    {
-        selectedItem = null;
-        e_roaNimi.Text = string.Empty;
-        e_valgud.Text = string.Empty;
-        e_rasvad.Text = string.Empty;
-        e_susivesikud.Text = string.Empty;
-        e_kalorid.Text = string.Empty;
-        dp_kuupaev.Date = DateTime.Now;
-        tp_kallaaeg.Time = TimeSpan.FromHours(12);
-        ohtusookListView.SelectedItem = null;
-        btn_kustuta.IsVisible = false;
+        private void ClearForm()
+        {
+            selectedItem = null;
+            fotoBytes = null;
+            ec_roaNimi.Text = ec_valgud.Text = ec_rasvad.Text = ec_susivesikud.Text = ec_kalorid.Text = string.Empty;
+            dp_kuupaev.Date = DateTime.Now;
+            tp_kallaaeg.Time = TimeSpan.FromHours(18);
+            ohtusookListView.SelectedItem = null;
+            btn_kustuta.IsVisible = false;
+            fotoSection.Clear();
+        }
     }
 }
