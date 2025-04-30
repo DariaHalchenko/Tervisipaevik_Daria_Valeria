@@ -12,6 +12,8 @@ namespace Tervisipaevik_Daria_Valeria.View
         Switch aktiivneSwitch;
         Button salvestaButton, kustutaButton, uusSisestusButton;
         ListView veejalgimineListView;
+        BoxView bv_klaas;
+        Frame f_klaas;
 
         VeejalgimineClass selectedItem;
 
@@ -24,6 +26,7 @@ namespace Tervisipaevik_Daria_Valeria.View
 
             kogusEntry = new Entry { Placeholder = "Joodud vee kogus (ml)", Keyboard = Keyboard.Numeric };
             kuupaevPicker = new DatePicker { Date = DateTime.Now };
+            kuupaevPicker.DateSelected += KuupaevPicker_DateSelected;
             aktiivneSwitch = new Switch { IsToggled = true };
 
             salvestaButton = new Button { Text = "Salvesta" };
@@ -46,6 +49,24 @@ namespace Tervisipaevik_Daria_Valeria.View
             kustutaButton.Clicked += KustutaButton_Clicked;
             uusSisestusButton.Clicked += UusSisestusButton_Clicked;
 
+            f_klaas = new Frame
+            {
+                BorderColor = Colors.Blue,
+                HeightRequest = 300,
+                WidthRequest = 150,
+                Content = new Grid
+                {
+                    Children =
+                    {
+                        (bv_klaas = new BoxView
+                        {
+                            Color = Colors.LightBlue,
+                            VerticalOptions = LayoutOptions.End,
+                            HeightRequest = 0
+                        })
+                    }
+                }
+            };
             Content = new ScrollView
             {
                 Content = new StackLayout
@@ -62,6 +83,8 @@ namespace Tervisipaevik_Daria_Valeria.View
                         salvestaButton,
                         kustutaButton,
                         uusSisestusButton,
+                        new Label {Text = "Klaas"},
+                        f_klaas,
                         veejalgimineListView
                     }
                 }
@@ -70,18 +93,89 @@ namespace Tervisipaevik_Daria_Valeria.View
             LoadData();
         }
 
-        private void SalvestaButton_Clicked(object sender, EventArgs e)
+        private void KuupaevPicker_DateSelected(object? sender, DateChangedEventArgs e)
         {
-            if (!int.TryParse(kogusEntry.Text, out int kogus)) return;
+            LoadData();
+        }
 
-            if (selectedItem == null)
-                selectedItem = new VeejalgimineClass();
+        private async void SalvestaButton_Clicked(object sender, EventArgs e)
+        {
+            if (!aktiivneSwitch.IsToggled)
+            {
+                // Если стакан не активен, сохраняем 0 мл, независимо от введенного количества
+                var valitud_paev = kuupaevPicker.Date.Date;
 
-            selectedItem.Kuupaev = kuupaevPicker.Date;
-            selectedItem.Kogus = kogus;
-            selectedItem.Aktiivne = aktiivneSwitch.IsToggled;
+                var salvestamine = database.GetVeejalgimine()
+                    .FirstOrDefault(v => v.Kuupaev.Date == valitud_paev);
 
-            database.SaveVeejalgimine(selectedItem);
+                if (salvestamine != null)
+                {
+                    // Если запись существует, обновляем её на 0 мл
+                    salvestamine.Kogus = 0;
+                    salvestamine.Aktiivne = false; // Стакан не активен
+                    database.SaveVeejalgimine(salvestamine);
+                }
+                else
+                {
+                    // Если записи ещё нет, создаём новую с 0 мл
+                    var uus_kirje = new VeejalgimineClass
+                    {
+                        Kuupaev = valitud_paev,
+                        Kogus = 0, // Устанавливаем 0 мл
+                        Aktiivne = false // Стакан не активен
+                    };
+                    database.SaveVeejalgimine(uus_kirje);
+                }
+
+                ClearForm();
+                LoadData();
+                return; // Выход из метода, если стакан не активен
+            }
+
+            // Если стакан активен, проверяем и сохраняем введённое количество воды
+            if (!int.TryParse(kogusEntry.Text, out int kogus) || kogus <= 0)
+            {
+                await DisplayAlert("Viga", "Sisesta korrektne vee kogus.", "OK");
+                return;
+            }
+
+            var valitud_paev_active = kuupaevPicker.Date.Date;
+
+            var salvestamineActive = database.GetVeejalgimine()
+                .FirstOrDefault(v => v.Kuupaev.Date == valitud_paev_active);
+
+            const int norm = 2000;
+
+            if (salvestamineActive != null)
+            {
+                int uus_summa = salvestamineActive.Kogus + kogus;
+                if (uus_summa > norm)
+                {
+                    await DisplayAlert("Täis!", "Tänaseks on vee norm juba täis (2000ml).", "OK");
+                    return;
+                }
+
+                salvestamineActive.Kogus += kogus; // Добавляем количество воды
+                salvestamineActive.Aktiivne = true; // Стакан активен
+                database.SaveVeejalgimine(salvestamineActive);
+            }
+            else
+            {
+                if (kogus > norm)
+                {
+                    await DisplayAlert("Liiga palju", "Sisestatud kogus ületab päeva normi.", "OK");
+                    return;
+                }
+
+                var uus_kirje = new VeejalgimineClass
+                {
+                    Kuupaev = valitud_paev_active,
+                    Kogus = kogus, // Записываем введённую сумму
+                    Aktiivne = true // Стакан активен
+                };
+                database.SaveVeejalgimine(uus_kirje);
+            }
+
             ClearForm();
             LoadData();
         }
@@ -90,7 +184,12 @@ namespace Tervisipaevik_Daria_Valeria.View
         {
             if (selectedItem != null)
             {
-                database.DeleteVeejalgimine(selectedItem.Veejalgimine_id);
+                var kuupaev = selectedItem.Kuupaev.Date;
+                var kirjed = database.GetVeejalgimine().Where(v => v.Kuupaev.Date == kuupaev).ToList();
+
+                foreach (var kirje in kirjed)
+                    database.DeleteVeejalgimine(kirje.Veejalgimine_id);
+
                 ClearForm();
                 LoadData();
             }
@@ -121,13 +220,39 @@ namespace Tervisipaevik_Daria_Valeria.View
             aktiivneSwitch.IsToggled = true;
             veejalgimineListView.SelectedItem = null;
             kustutaButton.IsVisible = false;
+            bv_klaas.HeightRequest = 0;
         }
 
         private void LoadData()
         {
-            veejalgimineListView.ItemsSource = database.GetVeejalgimine()
+            var koik_andmed = database.GetVeejalgimine()
+                .GroupBy(v => v.Kuupaev.Date)
+                .Select(g => new VeejalgimineClass
+                {
+                    Kuupaev = g.Key,
+                    Kogus = g.Sum(x => x.Kogus),
+                    Aktiivne = g.Any(x => x.Aktiivne)
+                })
                 .OrderByDescending(v => v.Kuupaev)
                 .ToList();
+
+            // Обновляем данные в ListView
+            veejalgimineListView.ItemsSource = koik_andmed;
+
+            var paev = kuupaevPicker.Date.Date;
+            int kokku = koik_andmed
+                .Where(v => v.Kuupaev.Date == paev && v.Aktiivne)
+                .Sum(v => v.Kogus);
+
+            // Обновляем стакан
+            UpdateKlaasImg(kokku);
+        }
+
+        private void UpdateKlaasImg(int kogus)
+        {
+            double max = 2000;
+            double protsent = Math.Min(kogus / max, 1.0);
+            bv_klaas.HeightRequest = protsent * 300;
         }
     }
 }
