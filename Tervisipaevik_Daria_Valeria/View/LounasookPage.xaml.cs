@@ -111,10 +111,11 @@ namespace Tervisipaevik_Daria_Valeria.View
             {
                 ItemTemplate = new DataTemplate(() =>
                 {
-                    var textCell = new TextCell();
-                    textCell.SetBinding(TextCell.TextProperty, "Roa_nimi");
-                    textCell.SetBinding(TextCell.DetailProperty, new Binding("Kuupaev", stringFormat: "{0:d}"));
-                    return textCell;
+                    var imageCell = new ImageCell();
+                    imageCell.SetBinding(ImageCell.TextProperty, "Roa_nimi");
+                    imageCell.SetBinding(ImageCell.DetailProperty, new Binding("Kuupaev", stringFormat: "{0:d}"));
+                    imageCell.SetBinding(ImageCell.ImageSourceProperty, "FotoPath");
+                    return imageCell;
                 }),
                 HeightRequest = 250
             };
@@ -244,7 +245,22 @@ namespace Tervisipaevik_Daria_Valeria.View
 
         private void LoadData()
         {
-            lounasookListView.ItemsSource = database.GetLounasook().OrderByDescending(x => x.Kuupaev).ToList();
+            var list = database.GetLounasook().OrderByDescending(x => x.Kuupaev).ToList();
+
+            foreach (var item in list)
+            {
+                if (item.Toidu_foto != null && item.Toidu_foto.Length > 0)
+                {
+                    string tempPath = Path.Combine(FileSystem.CacheDirectory, $"img_{item.Lounasook_id}.jpg");
+                    File.WriteAllBytes(tempPath, item.Toidu_foto);
+                    item.FotoPath = tempPath;
+                }
+                else
+                {
+                    item.FotoPath = null;
+                }
+            }
+            lounasookListView.ItemsSource = list;
         }
 
         private void ClearForm()

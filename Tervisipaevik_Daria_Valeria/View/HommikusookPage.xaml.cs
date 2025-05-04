@@ -6,7 +6,7 @@ namespace Tervisipaevik_Daria_Valeria.View
     public partial class HommikusookPage : ContentPage
     {
         private string lisafoto;
-        private byte[] fotoBytes; 
+        private byte[] fotoBytes;
         private HommikusookDatabase database;
         private HommikusookClass selectedItem;
 
@@ -53,7 +53,7 @@ namespace Tervisipaevik_Daria_Valeria.View
             ic = new ImageCell
             {
                 Text = "Foto nimetus",
-                Detail = "Foto kirjeldus"
+                Detail = "Toidupilt"
             };
 
             fotoSection = new TableSection("Foto");
@@ -105,13 +105,15 @@ namespace Tervisipaevik_Daria_Valeria.View
             {
                 ItemTemplate = new DataTemplate(() =>
                 {
-                    var textCell = new TextCell();
-                    textCell.SetBinding(TextCell.TextProperty, "Roa_nimi");
-                    textCell.SetBinding(TextCell.DetailProperty, new Binding("Kuupaev", stringFormat: "{0:d}"));
-                    return textCell;
+                    var imageCell = new ImageCell();
+                    imageCell.SetBinding(ImageCell.TextProperty, "Roa_nimi");
+                    imageCell.SetBinding(ImageCell.DetailProperty, new Binding("Kuupaev", stringFormat: "{0:d}"));
+                    imageCell.SetBinding(ImageCell.ImageSourceProperty, "FotoPath");
+                    return imageCell;
                 }),
                 HeightRequest = 250
             };
+
 
             hommikusookListView.ItemSelected += HommikusookListView_ItemSelected;
 
@@ -165,14 +167,17 @@ namespace Tervisipaevik_Daria_Valeria.View
                 File.WriteAllBytes(lisafoto, fotoBytes);
                 ic.ImageSource = ImageSource.FromFile(lisafoto);
 
-                fotoSection.Clear(); 
+                fotoSection.Clear();
                 fotoSection.Add(ic);
 
-                await Shell.Current.DisplayAlert("Edu", "Foto on edukalt salvestatud", "Ok");
+                await Shell.Current.DisplayAlert("Edu", "Foto on salvestatud", "OK");
             }
         }
 
-        private void Btn_puhastada_Clicked(object sender, EventArgs e) => ClearForm();
+        private void Btn_puhastada_Clicked(object sender, EventArgs e)
+        {
+            ClearForm();
+        }
 
         private void Btn_kustuta_Clicked(object sender, EventArgs e)
         {
@@ -192,10 +197,10 @@ namespace Tervisipaevik_Daria_Valeria.View
                 selectedItem = new HommikusookClass();
 
             selectedItem.Roa_nimi = ec_roaNimi.Text;
-            selectedItem.Valgud = int.TryParse(ec_valgud.Text, out var valgud) ? valgud : 0;
-            selectedItem.Rasvad = int.TryParse(ec_rasvad.Text, out var rasvad) ? rasvad : 0;
-            selectedItem.Susivesikud = int.TryParse(ec_susivesikud.Text, out var susivesikud) ? susivesikud : 0;
-            selectedItem.Kalorid = int.TryParse(ec_kalorid.Text, out var kalorid) ? kalorid : 0;
+            selectedItem.Valgud = int.TryParse(ec_valgud.Text, out int valgud) ? valgud : 0;
+            selectedItem.Rasvad = int.TryParse(ec_rasvad.Text, out int rasvad) ? rasvad : 0;
+            selectedItem.Susivesikud = int.TryParse(ec_susivesikud.Text, out int susivesikud) ? susivesikud : 0;
+            selectedItem.Kalorid = int.TryParse(ec_kalorid.Text, out int kalorid) ? kalorid : 0;
             selectedItem.Kuupaev = dp_kuupaev.Date;
             selectedItem.Kallaaeg = tp_kallaaeg.Time;
 
@@ -223,9 +228,9 @@ namespace Tervisipaevik_Daria_Valeria.View
 
             if (selectedItem.Toidu_foto != null && selectedItem.Toidu_foto.Length > 0)
             {
-                string tempFilePath = Path.Combine(FileSystem.CacheDirectory, "temp_selected_image.jpg");
-                File.WriteAllBytes(tempFilePath, selectedItem.Toidu_foto);
-                ic.ImageSource = ImageSource.FromFile(tempFilePath);
+                string tempPath = Path.Combine(FileSystem.CacheDirectory, "temp_hommikusook.jpg");
+                File.WriteAllBytes(tempPath, selectedItem.Toidu_foto);
+                ic.ImageSource = ImageSource.FromFile(tempPath);
 
                 fotoSection.Clear();
                 fotoSection.Add(ic);
@@ -238,8 +243,24 @@ namespace Tervisipaevik_Daria_Valeria.View
 
         private void LoadData()
         {
-            hommikusookListView.ItemsSource = database.GetHommikusook().OrderByDescending(x => x.Kuupaev).ToList();
+            var list = database.GetHommikusook().OrderByDescending(x => x.Kuupaev).ToList();
+
+            foreach (var item in list)
+            {
+                if (item.Toidu_foto != null && item.Toidu_foto.Length > 0)
+                {
+                    string tempPath = Path.Combine(FileSystem.CacheDirectory, $"img_{item.Hommikusook_id}.jpg");
+                    File.WriteAllBytes(tempPath, item.Toidu_foto);
+                    item.FotoPath = tempPath;
+                }
+                else
+                {
+                    item.FotoPath = null;
+                }
+            }
+            hommikusookListView.ItemsSource = list;
         }
+
 
         private void ClearForm()
         {

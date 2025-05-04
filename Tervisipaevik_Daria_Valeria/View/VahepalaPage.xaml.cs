@@ -107,10 +107,11 @@ public partial class VahepalaPage : ContentPage
         {
             ItemTemplate = new DataTemplate(() =>
             {
-                var textCell = new TextCell();
-                textCell.SetBinding(TextCell.TextProperty, "Roa_nimi");
-                textCell.SetBinding(TextCell.DetailProperty, new Binding("Kuupaev", stringFormat: "{0:d}"));
-                return textCell;
+                var imageCell = new ImageCell();
+                imageCell.SetBinding(ImageCell.TextProperty, "Roa_nimi");
+                imageCell.SetBinding(ImageCell.DetailProperty, new Binding("Kuupaev", stringFormat: "{0:d}"));
+                imageCell.SetBinding(ImageCell.ImageSourceProperty, "FotoPath");
+                return imageCell;
             }),
             HeightRequest = 250
         };
@@ -234,7 +235,7 @@ public partial class VahepalaPage : ContentPage
 
             if (selectedItem.Toidu_foto != null && selectedItem.Toidu_foto.Length > 0)
             {
-                string tempFilePath = Path.Combine(FileSystem.CacheDirectory, "temp_selected_image.jpg");
+                string tempFilePath = Path.Combine(FileSystem.CacheDirectory, "pilt.jpg");
                 File.WriteAllBytes(tempFilePath, selectedItem.Toidu_foto);
                 ic.ImageSource = ImageSource.FromFile(tempFilePath);
 
@@ -250,7 +251,23 @@ public partial class VahepalaPage : ContentPage
 
     public void LoadData()
     {
-        vahepalaListView.ItemsSource = database.GetVahepala().OrderByDescending(x => x.Kuupaev).ToList();
+        var list = database.GetVahepala().OrderByDescending(x => x.Kuupaev).ToList();
+
+        foreach (var item in list)
+        {
+            if (item.Toidu_foto != null && item.Toidu_foto.Length > 0)
+            {
+                string tempPath = Path.Combine(FileSystem.CacheDirectory, $"img_{item.Vahepala_id}.jpg");
+                File.WriteAllBytes(tempPath, item.Toidu_foto);
+                item.FotoPath = tempPath;
+            }
+            else
+            {
+                item.FotoPath = null;
+            }
+        }
+
+        vahepalaListView.ItemsSource = list;
     }
 
     public void ClearForm()

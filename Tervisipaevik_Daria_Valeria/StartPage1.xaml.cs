@@ -184,21 +184,21 @@ public partial class StartPage1 : ContentPage
 
     private async void Btn_vahepala_Clicked(object? sender, EventArgs e)
     {
-        await Navigation.PushAsync(new VahepalaPage());
+        await Navigation.PushAsync(new VahepalaFotoPage());
     }
 
     private async void Btn_ohtusook_Clicked(object? sender, EventArgs e)
     {
-        await Navigation.PushAsync(new OhtusookPage());
+        await Navigation.PushAsync(new OhtusookFotoPage());
     }
 
     private async void Btn_louna_Clicked(object? sender, EventArgs e)
     {
-        await Navigation.PushAsync(new LounasookPage());
+        await Navigation.PushAsync(new LounasookFotoPage());
     }
 
     private async void Btn_hommikusook_Clicked(object? sender, EventArgs e)
     {
-        await Navigation.PushAsync(new HommikusookPage());
+        await Navigation.PushAsync(new HommikusookFotoPage());
     }
 }
