@@ -45,5 +45,18 @@ namespace Tervisipaevik_Daria_Valeria.Database
         {
             return db.Delete<HommikusookClass>(id);
         }
+
+        public void ClearHommikusookTable()
+        {
+            try
+            {
+                db.DeleteAll<HommikusookClass>();
+                Console.WriteLine("Hommikusook table cleared successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error clearing Hommikusook table: {ex.Message}");
+            }
+        }
     }
 }

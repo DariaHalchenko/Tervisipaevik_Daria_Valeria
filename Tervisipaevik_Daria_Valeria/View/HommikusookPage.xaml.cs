@@ -46,12 +46,16 @@ namespace Tervisipaevik_Daria_Valeria.View
             btn_puhastada = new Button { Text = "Uus sisestus" };
             btn_pildista = new Button { Text = "Tee foto" };
             btn_valifoto = new Button { Text = "Vali foto" };
+            
+            var btn_clearDb = new Button { Text = "Очистить базу" };
 
             btn_salvesta.Clicked += Btn_salvesta_Clicked;
             btn_kustuta.Clicked += Btn_kustuta_Clicked;
             btn_puhastada.Clicked += Btn_puhastada_Clicked;
             btn_pildista.Clicked += Btn_pildista_Clicked;
             btn_valifoto.Clicked += Btn_valifoto_Clicked;
+
+            btn_clearDb.Clicked += (s, e) => { database.ClearHommikusookTable(); ClearForm(); LoadData(); };
 
             // Фото
             ic = new ImageCell
@@ -106,6 +110,7 @@ namespace Tervisipaevik_Daria_Valeria.View
                 }
             };
 
+            tableView.Root[2].Add(new ViewCell { View = btn_clearDb });
             // Список записей
             hommikusookListView = new ListView
             {
@@ -160,22 +165,38 @@ namespace Tervisipaevik_Daria_Valeria.View
 
         private async Task SalvestaFoto(FileResult foto)
         {
-            if (foto != null)
+            try
             {
-                lisafoto = Path.Combine(FileSystem.CacheDirectory, foto.FileName);
+                if (foto != null)
+                {
+                    lisafoto = Path.Combine(FileSystem.CacheDirectory, foto.FileName);
+                    using Stream sourceStream = await foto.OpenReadAsync();
+                    using MemoryStream ms = new MemoryStream();
+                    await sourceStream.CopyToAsync(ms);
+                    fotoBytes = ms.ToArray();
 
-                using Stream sourceStream = await foto.OpenReadAsync();
-                using MemoryStream ms = new MemoryStream();
-                await sourceStream.CopyToAsync(ms);
-                fotoBytes = ms.ToArray();
-
-                File.WriteAllBytes(lisafoto, fotoBytes);
-                ic.ImageSource = ImageSource.FromFile(lisafoto);
-
-                fotoSection.Clear();
-                fotoSection.Add(ic);
-
-                await Shell.Current.DisplayAlert("Edu", "Foto on salvestatud", "OK");
+                    File.WriteAllBytes(lisafoto, fotoBytes);
+                    if (File.Exists(lisafoto))
+                    {
+                        ic.ImageSource = ImageSource.FromFile(lisafoto);
+                        lock (fotoSection)
+                        {
+                            fotoSection.Clear();
+                            fotoSection.Add(ic);
+                        }
+                        await Shell.Current.DisplayAlert("Edu", "Foto on salvestatud", "OK");
+                    }
+                    else
+                    {
+                        WriteLog($"File not found: {lisafoto}");
+                        await Shell.Current.DisplayAlert("Ошибка", "Не удалось сохранить фото", "OK");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteLog($"Error in SalvestaFoto: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                await Shell.Current.DisplayAlert("Ошибка в SalvestaFoto", $"Произошла ошибка: {ex.Message}", "OK");
             }
         }
 
@@ -219,63 +240,139 @@ namespace Tervisipaevik_Daria_Valeria.View
 
         private void HommikusookListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
-            selectedItem = e.SelectedItem as HommikusookClass;
-            if (selectedItem == null) return;
-
-            ec_roaNimi.Text = selectedItem.Roa_nimi;
-            ec_valgud.Text = selectedItem.Valgud.ToString();
-            ec_rasvad.Text = selectedItem.Rasvad.ToString();
-            ec_susivesikud.Text = selectedItem.Susivesikud.ToString();
-            ec_kalorid.Text = selectedItem.Kalorid.ToString();
-            dp_kuupaev.Date = selectedItem.Kuupaev;
-            tp_kallaaeg.Time = selectedItem.Kallaaeg;
-            btn_kustuta.IsVisible = true;
-
-            if (selectedItem.Toidu_foto != null && selectedItem.Toidu_foto.Length > 0)
+            try
             {
-                string tempPath = Path.Combine(FileSystem.CacheDirectory, "pilt.jpg");
-                File.WriteAllBytes(tempPath, selectedItem.Toidu_foto);
-                ic.ImageSource = ImageSource.FromFile(tempPath);
+                selectedItem = e.SelectedItem as HommikusookClass;
+                if (selectedItem == null) return;
 
-                fotoSection.Clear();
-                fotoSection.Add(ic);
+                ec_roaNimi.Text = selectedItem.Roa_nimi;
+                ec_valgud.Text = selectedItem.Valgud.ToString();
+                ec_rasvad.Text = selectedItem.Rasvad.ToString();
+                ec_susivesikud.Text = selectedItem.Susivesikud.ToString();
+                ec_kalorid.Text = selectedItem.Kalorid.ToString();
+                dp_kuupaev.Date = selectedItem.Kuupaev;
+                tp_kallaaeg.Time = selectedItem.Kallaaeg;
+                btn_kustuta.IsVisible = true;
+
+                lock (fotoSection)
+                {
+                    fotoSection.Clear();
+                    if (selectedItem.Toidu_foto != null && selectedItem.Toidu_foto.Length > 0)
+                    {
+                        string tempPath = Path.Combine(FileSystem.CacheDirectory, "pilt.jpg");
+                        try
+                        {
+                            File.WriteAllBytes(tempPath, selectedItem.Toidu_foto);
+                            if (File.Exists(tempPath))
+                            {
+                                ic.ImageSource = ImageSource.FromFile(tempPath);
+                                fotoSection.Add(ic);
+                            }
+                            else
+                            {
+                                WriteLog($"File not found: {tempPath}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            WriteLog($"Error writing file {tempPath}: {ex.Message}");
+                        }
+                    }
+                }
             }
-            else
+            catch (Exception ex)
             {
-                fotoSection.Clear();
+                WriteLog($"Error in ItemSelected: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                Shell.Current.DisplayAlert("Ошибка в ItemSelected", $"Произошла ошибка: {ex.Message}", "OK");
             }
         }
 
         private void LoadData()
         {
-            var list = database.GetHommikusook().OrderByDescending(x => x.Kuupaev).ToList();
-
-            foreach (var item in list)
+            try
             {
-                if (item.Toidu_foto != null && item.Toidu_foto.Length > 0)
+                var list = database.GetHommikusook().OrderByDescending(x => x.Kuupaev).ToList();
+                WriteLog($"Loaded {list.Count} records from database");
+
+                // Проверка на дубликаты
+                var duplicates = list.GroupBy(x => x.Hommikusook_id)
+                                    .Where(g => g.Count() > 1)
+                                    .Select(g => g.Key)
+                                    .ToList();
+                if (duplicates.Any())
                 {
-                    string tempPath = Path.Combine(FileSystem.CacheDirectory, $"img_{item.Hommikusook_id}.jpg");
-                    File.WriteAllBytes(tempPath, item.Toidu_foto);
-                    item.FotoPath = tempPath;
+                    WriteLog($"Found duplicate IDs: {string.Join(", ", duplicates)}");
                 }
-                else
+
+                foreach (var item in list)
                 {
-                    item.FotoPath = null;
+                    if (item.Toidu_foto != null && item.Toidu_foto.Length > 0)
+                    {
+                        string tempPath = Path.Combine(FileSystem.CacheDirectory, $"img_{item.Hommikusook_id}.jpg");
+                        try
+                        {
+                            File.WriteAllBytes(tempPath, item.Toidu_foto);
+                            if (File.Exists(tempPath))
+                            {
+                                item.FotoPath = tempPath;
+                            }
+                            else
+                            {
+                                item.FotoPath = null;
+                                WriteLog($"File not found: {tempPath}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            WriteLog($"Error writing file {tempPath}: {ex.Message}");
+                            item.FotoPath = null;
+                        }
+                    }
+                    else
+                    {
+                        item.FotoPath = null;
+                    }
                 }
+                hommikusookListView.ItemsSource = null; // Сброс перед обновлением
+                hommikusookListView.ItemsSource = list;
+                WriteLog("ListView updated");
             }
-            hommikusookListView.ItemsSource = list;
+            catch (Exception ex)
+            {
+                WriteLog($"Error in LoadData: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                Shell.Current.DisplayAlert("Ошибка в LoadData", $"Произошла ошибка: {ex.Message}", "OK");
+            }
+        }
+
+        private void WriteLog(string message)
+        {
+            string logPath = Path.Combine(FileSystem.CacheDirectory, "app_log.txt");
+            Console.WriteLine(logPath, $"{DateTime.Now}: {message}\n");
+            File.AppendAllText(logPath, $"{DateTime.Now}: {message}\n");
         }
 
         private void ClearForm()
         {
-            selectedItem = null;
-            fotoBytes = null;
-            ec_roaNimi.Text = ec_valgud.Text = ec_rasvad.Text = ec_susivesikud.Text = ec_kalorid.Text = string.Empty;
-            dp_kuupaev.Date = DateTime.Now;
-            tp_kallaaeg.Time = TimeSpan.FromHours(12);
-            hommikusookListView.SelectedItem = null;
-            btn_kustuta.IsVisible = false;
-            fotoSection.Clear();
+            try
+            {
+                selectedItem = null;
+                fotoBytes = null;
+                ec_roaNimi.Text = ec_valgud.Text = ec_rasvad.Text = ec_susivesikud.Text = ec_kalorid.Text = string.Empty;
+                dp_kuupaev.Date = DateTime.Now;
+                tp_kallaaeg.Time = TimeSpan.FromHours(12);
+                hommikusookListView.SelectedItem = null;
+                btn_kustuta.IsVisible = false;
+
+                lock (fotoSection)
+                {
+                    fotoSection.Clear();
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteLog($"Error in ClearForm: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                Shell.Current.DisplayAlert("Ошибка в ClearForm", $"Произошла ошибка: {ex.Message}", "OK");
+            }
         }
     }
 }
