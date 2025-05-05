@@ -230,7 +230,7 @@ namespace Tervisipaevik_Daria_Valeria.View
 
             if (selectedItem.Toidu_foto != null && selectedItem.Toidu_foto.Length > 0)
             {
-                string tempPath = Path.Combine(FileSystem.CacheDirectory, "temp_lounasook.jpg");
+                string tempPath = Path.Combine(FileSystem.CacheDirectory, "pilt.jpg");
                 File.WriteAllBytes(tempPath, selectedItem.Toidu_foto);
                 ic.ImageSource = ImageSource.FromFile(tempPath);
 

@@ -5,39 +5,42 @@ namespace Tervisipaevik_Daria_Valeria.View
 {
     public partial class HommikusookPage : ContentPage
     {
-        private string lisafoto;
-        private byte[] fotoBytes;
         private HommikusookDatabase database;
         private HommikusookClass selectedItem;
 
         private EntryCell ec_roaNimi, ec_valgud, ec_rasvad, ec_susivesikud, ec_kalorid;
         private DatePicker dp_kuupaev;
         private TimePicker tp_kallaaeg;
-        private ImageCell ic;
-
-        private TableView tableview;
-        private TableSection fotoSection;
-        private ListView hommikusookListView;
 
         private Button btn_salvesta, btn_kustuta, btn_puhastada, btn_pildista, btn_valifoto;
+
+        private ImageCell ic;
+        private TableSection fotoSection;
+
+        private ListView hommikusookListView;
+        private byte[] fotoBytes;
+        private string lisafoto;
+
+        private TableView tableView;
 
         public HommikusookPage()
         {
             string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tervisepaevik.db");
             database = new HommikusookDatabase(dbPath);
 
-            Title = "Hommikusöök";
+            Title = "Hommikuöök";
 
-            // Инициализация
-            ec_roaNimi = new EntryCell { Label = "Roa nimi", Placeholder = "nt. Puder" };
+            // Ввод
+            ec_roaNimi = new EntryCell { Label = "Roa nimi", Placeholder = "nt. Supp" };
             ec_valgud = new EntryCell { Label = "Valgud", Placeholder = "g", Keyboard = Keyboard.Numeric };
             ec_rasvad = new EntryCell { Label = "Rasvad", Placeholder = "g", Keyboard = Keyboard.Numeric };
             ec_susivesikud = new EntryCell { Label = "Süsivesikud", Placeholder = "g", Keyboard = Keyboard.Numeric };
             ec_kalorid = new EntryCell { Label = "Kalorid", Placeholder = "kcal", Keyboard = Keyboard.Numeric };
 
             dp_kuupaev = new DatePicker { Date = DateTime.Now };
-            tp_kallaaeg = new TimePicker { Time = TimeSpan.FromHours(8) };
+            tp_kallaaeg = new TimePicker { Time = TimeSpan.FromHours(12) };
 
+            // Кнопки
             btn_salvesta = new Button { Text = "Salvesta" };
             btn_kustuta = new Button { Text = "Kustuta", IsVisible = false };
             btn_puhastada = new Button { Text = "Uus sisestus" };
@@ -50,6 +53,7 @@ namespace Tervisipaevik_Daria_Valeria.View
             btn_pildista.Clicked += Btn_pildista_Clicked;
             btn_valifoto.Clicked += Btn_valifoto_Clicked;
 
+            // Фото
             ic = new ImageCell
             {
                 Text = "Foto nimetus",
@@ -58,10 +62,11 @@ namespace Tervisipaevik_Daria_Valeria.View
 
             fotoSection = new TableSection("Foto");
 
-            tableview = new TableView
+            // Таблица ввода
+            tableView = new TableView
             {
                 Intent = TableIntent.Form,
-                Root = new TableRoot("Sisesta hommikusöök")
+                Root = new TableRoot("Sisesta hommikuöök")
                 {
                     new TableSection("Üldandmed")
                     {
@@ -86,7 +91,7 @@ namespace Tervisipaevik_Daria_Valeria.View
                             }
                         }
                     },
-                    new TableSection("FOTO")
+                    new TableSection("Foto")
                     {
                         new ViewCell
                         {
@@ -101,6 +106,7 @@ namespace Tervisipaevik_Daria_Valeria.View
                 }
             };
 
+            // Список записей
             hommikusookListView = new ListView
             {
                 ItemTemplate = new DataTemplate(() =>
@@ -114,7 +120,6 @@ namespace Tervisipaevik_Daria_Valeria.View
                 HeightRequest = 250
             };
 
-
             hommikusookListView.ItemSelected += HommikusookListView_ItemSelected;
 
             Content = new ScrollView
@@ -124,7 +129,7 @@ namespace Tervisipaevik_Daria_Valeria.View
                     Padding = 10,
                     Children =
                     {
-                        tableview,
+                        tableView,
                         new Label { Text = "Salvestatud hommikusöögid", FontAttributes = FontAttributes.Bold },
                         hommikusookListView
                     }
@@ -143,7 +148,7 @@ namespace Tervisipaevik_Daria_Valeria.View
             }
             else
             {
-                await Shell.Current.DisplayAlert("Viga", "Teie seade ei ole toetatud", "Ok");
+                await Shell.Current.DisplayAlert("Viga", "Teie seade ei toeta foto tegemist", "OK");
             }
         }
 
@@ -174,21 +179,6 @@ namespace Tervisipaevik_Daria_Valeria.View
             }
         }
 
-        private void Btn_puhastada_Clicked(object sender, EventArgs e)
-        {
-            ClearForm();
-        }
-
-        private void Btn_kustuta_Clicked(object sender, EventArgs e)
-        {
-            if (selectedItem != null)
-            {
-                database.DeleteHommikusook(selectedItem.Hommikusook_id);
-                ClearForm();
-                LoadData();
-            }
-        }
-
         private void Btn_salvesta_Clicked(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(ec_roaNimi.Text)) return;
@@ -212,6 +202,21 @@ namespace Tervisipaevik_Daria_Valeria.View
             LoadData();
         }
 
+        private void Btn_kustuta_Clicked(object sender, EventArgs e)
+        {
+            if (selectedItem != null)
+            {
+                database.DeleteHommikusook(selectedItem.Hommikusook_id);
+                ClearForm();
+                LoadData();
+            }
+        }
+
+        private void Btn_puhastada_Clicked(object sender, EventArgs e)
+        {
+            ClearForm();    
+        }
+
         private void HommikusookListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
             selectedItem = e.SelectedItem as HommikusookClass;
@@ -228,7 +233,7 @@ namespace Tervisipaevik_Daria_Valeria.View
 
             if (selectedItem.Toidu_foto != null && selectedItem.Toidu_foto.Length > 0)
             {
-                string tempPath = Path.Combine(FileSystem.CacheDirectory, "temp_hommikusook.jpg");
+                string tempPath = Path.Combine(FileSystem.CacheDirectory, "pilt.jpg");
                 File.WriteAllBytes(tempPath, selectedItem.Toidu_foto);
                 ic.ImageSource = ImageSource.FromFile(tempPath);
 
@@ -261,14 +266,13 @@ namespace Tervisipaevik_Daria_Valeria.View
             hommikusookListView.ItemsSource = list;
         }
 
-
         private void ClearForm()
         {
             selectedItem = null;
             fotoBytes = null;
             ec_roaNimi.Text = ec_valgud.Text = ec_rasvad.Text = ec_susivesikud.Text = ec_kalorid.Text = string.Empty;
             dp_kuupaev.Date = DateTime.Now;
-            tp_kallaaeg.Time = TimeSpan.FromHours(8);
+            tp_kallaaeg.Time = TimeSpan.FromHours(12);
             hommikusookListView.SelectedItem = null;
             btn_kustuta.IsVisible = false;
             fotoSection.Clear();

@@ -31,14 +31,14 @@ namespace Tervisipaevik_Daria_Valeria.View
             Title = "Õhtusöök";
 
             // Ввод
-            ec_roaNimi = new EntryCell { Label = "Roa nimi", Placeholder = "nt. Kartul" };
+            ec_roaNimi = new EntryCell { Label = "Roa nimi", Placeholder = "nt. Supp" };
             ec_valgud = new EntryCell { Label = "Valgud", Placeholder = "g", Keyboard = Keyboard.Numeric };
             ec_rasvad = new EntryCell { Label = "Rasvad", Placeholder = "g", Keyboard = Keyboard.Numeric };
             ec_susivesikud = new EntryCell { Label = "Süsivesikud", Placeholder = "g", Keyboard = Keyboard.Numeric };
             ec_kalorid = new EntryCell { Label = "Kalorid", Placeholder = "kcal", Keyboard = Keyboard.Numeric };
 
             dp_kuupaev = new DatePicker { Date = DateTime.Now };
-            tp_kallaaeg = new TimePicker { Time = TimeSpan.FromHours(18) };
+            tp_kallaaeg = new TimePicker { Time = TimeSpan.FromHours(12) };
 
             // Кнопки
             btn_salvesta = new Button { Text = "Salvesta" };
@@ -106,7 +106,7 @@ namespace Tervisipaevik_Daria_Valeria.View
                 }
             };
 
-            // Список
+            // Список записей
             ohtusookListView = new ListView
             {
                 ItemTemplate = new DataTemplate(() =>
@@ -120,7 +120,7 @@ namespace Tervisipaevik_Daria_Valeria.View
                 HeightRequest = 250
             };
 
-            ohtusookListView.ItemSelected += OhtusookListView_ItemSelected;
+            ohtusookListView.ItemSelected += LounasookListView_ItemSelected;
 
             Content = new ScrollView
             {
@@ -148,7 +148,7 @@ namespace Tervisipaevik_Daria_Valeria.View
             }
             else
             {
-                await Shell.Current.DisplayAlert("Viga", "Seade ei toeta pildistamist", "OK");
+                await Shell.Current.DisplayAlert("Viga", "Teie seade ei toeta foto tegemist", "OK");
             }
         }
 
@@ -175,7 +175,7 @@ namespace Tervisipaevik_Daria_Valeria.View
                 fotoSection.Clear();
                 fotoSection.Add(ic);
 
-                await Shell.Current.DisplayAlert("Edu", "Foto salvestatud", "OK");
+                await Shell.Current.DisplayAlert("Edu", "Foto on salvestatud", "OK");
             }
         }
 
@@ -214,7 +214,7 @@ namespace Tervisipaevik_Daria_Valeria.View
 
         private void Btn_puhastada_Clicked(object sender, EventArgs e) => ClearForm();
 
-        private void OhtusookListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
+        private void LounasookListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
             selectedItem = e.SelectedItem as OhtusookClass;
             if (selectedItem == null) return;
@@ -230,9 +230,10 @@ namespace Tervisipaevik_Daria_Valeria.View
 
             if (selectedItem.Toidu_foto != null && selectedItem.Toidu_foto.Length > 0)
             {
-                string tempPath = Path.Combine(FileSystem.CacheDirectory, "temp_ohtusook.jpg");
+                string tempPath = Path.Combine(FileSystem.CacheDirectory, "pilt.jpg");
                 File.WriteAllBytes(tempPath, selectedItem.Toidu_foto);
                 ic.ImageSource = ImageSource.FromFile(tempPath);
+
                 fotoSection.Clear();
                 fotoSection.Add(ic);
             }
@@ -259,7 +260,6 @@ namespace Tervisipaevik_Daria_Valeria.View
                     item.FotoPath = null;
                 }
             }
-
             ohtusookListView.ItemsSource = list;
         }
 
@@ -269,7 +269,7 @@ namespace Tervisipaevik_Daria_Valeria.View
             fotoBytes = null;
             ec_roaNimi.Text = ec_valgud.Text = ec_rasvad.Text = ec_susivesikud.Text = ec_kalorid.Text = string.Empty;
             dp_kuupaev.Date = DateTime.Now;
-            tp_kallaaeg.Time = TimeSpan.FromHours(18);
+            tp_kallaaeg.Time = TimeSpan.FromHours(12);
             ohtusookListView.SelectedItem = null;
             btn_kustuta.IsVisible = false;
             fotoSection.Clear();
