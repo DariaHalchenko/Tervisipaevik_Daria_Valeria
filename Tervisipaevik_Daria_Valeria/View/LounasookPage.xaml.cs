@@ -23,7 +23,7 @@ public partial class LounasookPage : ContentPage
 
     public LounasookPage()
     {
-        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tervisepaevik.db");
+        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
         database = new LounasookDatabase(dbPath);
 
         Title = "Lounasook";

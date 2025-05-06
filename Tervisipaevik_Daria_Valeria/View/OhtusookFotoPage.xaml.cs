@@ -16,7 +16,7 @@ public partial class OhtusookFotoPage : ContentPage
         };
         btn_lisa.Clicked += Btn_lisa_Clicked;
 
-        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tervisepaevik.db");
+        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
         database = new OhtusookDatabase(dbPath);
 
         var imageList = new List<OhtusookClass>(database.GetOhtusook()

@@ -23,7 +23,7 @@ public partial class OhtusookPage : ContentPage
 
     public OhtusookPage()
     {
-        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tervisepaevik.db");
+        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
         database = new OhtusookDatabase(dbPath);
 
         Title = "Ohtusook";

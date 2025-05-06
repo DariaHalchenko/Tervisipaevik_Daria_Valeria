@@ -1,4 +1,9 @@
-﻿using Tervisipaevik_Daria_Valeria.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Microsoft.Maui.Controls;
+using Tervisipaevik_Daria_Valeria.Models;
 using Tervisipaevik_Daria_Valeria.Database;
 
 namespace Tervisipaevik_Daria_Valeria.View
@@ -10,7 +15,7 @@ namespace Tervisipaevik_Daria_Valeria.View
         Entry kogusEntry;
         DatePicker kuupaevPicker;
         Switch aktiivneSwitch;
-        Button salvestaButton, kustutaButton, uusSisestusButton;
+        Button salvestaButton, kustutaButton, uusSisestusButton, avaGraafikButton;
         ListView veejalgimineListView;
         BoxView bv_klaas;
         Frame f_klaas;
@@ -19,7 +24,7 @@ namespace Tervisipaevik_Daria_Valeria.View
 
         public VeejalgiminePage()
         {
-            string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tervisepaevik.db");
+            string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
             database = new VeejalgimineDatabase(dbPath);
 
             Title = "Vee jälgimine";
@@ -32,6 +37,7 @@ namespace Tervisipaevik_Daria_Valeria.View
             salvestaButton = new Button { Text = "Salvesta" };
             kustutaButton = new Button { Text = "Kustuta", IsVisible = false };
             uusSisestusButton = new Button { Text = "Uus sisestus" };
+            avaGraafikButton = new Button { Text = "Ava graafik" };
 
             veejalgimineListView = new ListView
             {
@@ -48,6 +54,7 @@ namespace Tervisipaevik_Daria_Valeria.View
             salvestaButton.Clicked += SalvestaButton_Clicked;
             kustutaButton.Clicked += KustutaButton_Clicked;
             uusSisestusButton.Clicked += UusSisestusButton_Clicked;
+            avaGraafikButton.Clicked += AvaGraafikButton_Clicked;
 
             f_klaas = new Frame
             {
@@ -67,6 +74,7 @@ namespace Tervisipaevik_Daria_Valeria.View
                     }
                 }
             };
+
             Content = new ScrollView
             {
                 Content = new StackLayout
@@ -83,7 +91,8 @@ namespace Tervisipaevik_Daria_Valeria.View
                         salvestaButton,
                         kustutaButton,
                         uusSisestusButton,
-                        new Label {Text = "Klaas"},
+                        avaGraafikButton,
+                        new Label { Text = "Klaas" },
                         f_klaas,
                         veejalgimineListView
                     }
@@ -92,6 +101,16 @@ namespace Tervisipaevik_Daria_Valeria.View
 
             LoadData();
         }
+
+        private async void AvaGraafikButton_Clicked(object? sender, EventArgs e)
+        {
+            var andmed = database.GetVeejalgimine()
+                .OrderBy(v => v.Kuupaev)
+                .ToList();
+
+            await Navigation.PushAsync(new VeejalgimineGrafikPage(andmed));
+        }
+
 
         private void KuupaevPicker_DateSelected(object? sender, DateChangedEventArgs e)
         {
@@ -102,7 +121,6 @@ namespace Tervisipaevik_Daria_Valeria.View
         {
             if (!aktiivneSwitch.IsToggled)
             {
-                // Если стакан не активен, сохраняем 0 мл, независимо от введенного количества
                 var valitud_paev = kuupaevPicker.Date.Date;
 
                 var salvestamine = database.GetVeejalgimine()
@@ -110,29 +128,26 @@ namespace Tervisipaevik_Daria_Valeria.View
 
                 if (salvestamine != null)
                 {
-                    // Если запись существует, обновляем её на 0 мл
                     salvestamine.Kogus = 0;
-                    salvestamine.Aktiivne = false; // Стакан не активен
+                    salvestamine.Aktiivne = false;
                     database.SaveVeejalgimine(salvestamine);
                 }
                 else
                 {
-                    // Если записи ещё нет, создаём новую с 0 мл
                     var uus_kirje = new VeejalgimineClass
                     {
                         Kuupaev = valitud_paev,
-                        Kogus = 0, // Устанавливаем 0 мл
-                        Aktiivne = false // Стакан не активен
+                        Kogus = 0,
+                        Aktiivne = false
                     };
                     database.SaveVeejalgimine(uus_kirje);
                 }
 
                 ClearForm();
                 LoadData();
-                return; // Выход из метода, если стакан не активен
+                return;
             }
 
-            // Если стакан активен, проверяем и сохраняем введённое количество воды
             if (!int.TryParse(kogusEntry.Text, out int kogus) || kogus <= 0)
             {
                 await DisplayAlert("Viga", "Sisesta korrektne vee kogus.", "OK");
@@ -155,8 +170,8 @@ namespace Tervisipaevik_Daria_Valeria.View
                     return;
                 }
 
-                salvestamineActive.Kogus += kogus; // Добавляем количество воды
-                salvestamineActive.Aktiivne = true; // Стакан активен
+                salvestamineActive.Kogus += kogus;
+                salvestamineActive.Aktiivne = true;
                 database.SaveVeejalgimine(salvestamineActive);
             }
             else
@@ -170,8 +185,8 @@ namespace Tervisipaevik_Daria_Valeria.View
                 var uus_kirje = new VeejalgimineClass
                 {
                     Kuupaev = valitud_paev_active,
-                    Kogus = kogus, // Записываем введённую сумму
-                    Aktiivne = true // Стакан активен
+                    Kogus = kogus,
+                    Aktiivne = true
                 };
                 database.SaveVeejalgimine(uus_kirje);
             }
@@ -236,7 +251,6 @@ namespace Tervisipaevik_Daria_Valeria.View
                 .OrderByDescending(v => v.Kuupaev)
                 .ToList();
 
-            // Обновляем данные в ListView
             veejalgimineListView.ItemsSource = koik_andmed;
 
             var paev = kuupaevPicker.Date.Date;
@@ -244,7 +258,6 @@ namespace Tervisipaevik_Daria_Valeria.View
                 .Where(v => v.Kuupaev.Date == paev && v.Aktiivne)
                 .Sum(v => v.Kogus);
 
-            // Обновляем стакан
             UpdateKlaasImg(kokku);
         }
 

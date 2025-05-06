@@ -117,6 +117,9 @@
 	  <MauiXaml Update="View\VahepalaPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="View\VeejalgimineGrafikPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="View\VeejalgiminePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

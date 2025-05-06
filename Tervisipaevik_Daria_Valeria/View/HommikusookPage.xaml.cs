@@ -23,7 +23,7 @@ public partial class HommikusookPage : ContentPage
 
     public HommikusookPage()
     {
-        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tervisepaevik.db");
+        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
         database = new HommikusookDatabase(dbPath);
 
         Title = "Hommikusook";
@@ -115,7 +115,7 @@ public partial class HommikusookPage : ContentPage
             HeightRequest = 250
         };
 
-        hommikusookListView.ItemSelected += VahepalaListView_ItemSelected;
+        hommikusookListView.ItemSelected += HommikusookListView_ItemSelected;
 
         Content = new ScrollView
         {
@@ -168,14 +168,15 @@ public partial class HommikusookPage : ContentPage
             fotoBytes = ms.ToArray();
 
             File.WriteAllBytes(lisafoto, fotoBytes);
-            ic.ImageSource = ImageSource.FromFile(lisafoto);
+            ic.ImageSource = ImageSource.FromFile(lisafoto);  // Это обновит источник изображения
 
             fotoSection.Clear();
-            fotoSection.Add(ic);
+            fotoSection.Add(ic);  // Убедитесь, что fotoSection обновляется с новым фото
 
-            await Shell.Current.DisplayAlert("Edu", "Foto on edukalt salvestatud", "Ok");
+            await Shell.Current.DisplayAlert("Успех", "Фото успешно сохранено", "OK");
         }
     }
+
 
     private void Btn_salvesta_Clicked(object? sender, EventArgs e)
     {
@@ -215,14 +216,11 @@ public partial class HommikusookPage : ContentPage
         ClearForm();
     }
 
-    private void VahepalaListView_ItemSelected(object? sender, SelectedItemChangedEventArgs e)
+    private void HommikusookListView_ItemSelected(object? sender, SelectedItemChangedEventArgs e)
     {
         selectedItem = e.SelectedItem as HommikusookClass;
         if (selectedItem != null)
         {
-            selectedItem = e.SelectedItem as HommikusookClass;
-            if (selectedItem == null) return;
-
             ec_roaNimi.Text = selectedItem.Roa_nimi;
             ec_valgud.Text = selectedItem.Valgud.ToString();
             ec_rasvad.Text = selectedItem.Rasvad.ToString();
@@ -232,21 +230,23 @@ public partial class HommikusookPage : ContentPage
             tp_kallaaeg.Time = selectedItem.Kallaaeg;
             btn_kustuta.IsVisible = true;
 
+            // Загрузка фотографии из байтового массива
             if (selectedItem.Toidu_foto != null && selectedItem.Toidu_foto.Length > 0)
             {
                 string tempFilePath = Path.Combine(FileSystem.CacheDirectory, "temp_selected_image.jpg");
                 File.WriteAllBytes(tempFilePath, selectedItem.Toidu_foto);
-                ic.ImageSource = ImageSource.FromFile(tempFilePath);
+                ic.ImageSource = ImageSource.FromFile(tempFilePath);  // Загружаем фото из файла
 
                 fotoSection.Clear();
                 fotoSection.Add(ic);
             }
             else
             {
-                fotoSection.Clear();
+                fotoSection.Clear();  // Если фото нет, очищаем секцию
             }
         }
     }
+
 
     public void LoadData()
     {

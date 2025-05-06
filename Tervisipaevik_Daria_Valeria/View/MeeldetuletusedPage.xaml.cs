@@ -18,7 +18,7 @@ namespace Tervisipaevik_Daria_Valeria.View
 
         public MeeldetuletusedPage()
         {
-            string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tervisepaevik.db");
+            string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
             database = new MeeldetuletusedDatabase(dbPath);
 
             Title = "Meeldetuletused";

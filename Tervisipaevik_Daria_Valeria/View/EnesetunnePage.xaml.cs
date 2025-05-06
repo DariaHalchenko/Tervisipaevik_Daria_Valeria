@@ -23,7 +23,7 @@ namespace Tervisipaevik_Daria_Valeria.View
 
         public EnesetunnePage()
         {
-            string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tervisepaevik.db");
+            string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
             database = new EnesetunneDatabase(dbPath);
 
             Title = "Enesetunne";

@@ -17,7 +17,7 @@ namespace Tervisipaevik_Daria_Valeria.View
             };
             btn_lisa.Clicked += Btn_lisa_Clicked;
 
-            string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tervisepaevik.db");
+            string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
             database = new HommikusookDatabase(dbPath);
 
             var imageList = new List<HommikusookClass>(database.GetHommikusook()

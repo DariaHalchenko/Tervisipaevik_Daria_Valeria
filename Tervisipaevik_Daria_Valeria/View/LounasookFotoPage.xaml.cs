@@ -16,7 +16,7 @@ public partial class LounasookFotoPage : ContentPage
         };
         btn_lisa.Clicked += Btn_lisa_Clicked;
 
-        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tervisepaevik.db");
+        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
         database = new LounasookDatabase(dbPath);
 
         var imageList = new List<LounasookClass>(database.GetLounasook()

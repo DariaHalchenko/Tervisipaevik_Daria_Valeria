@@ -18,7 +18,7 @@ public partial class TreeningudPage : ContentPage
     public TreeningudPage()
     {
 
-        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tervisepaevik.db");
+        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
         database = new TreeningudDatabase(dbPath);
 
         Title = "Treeningud";

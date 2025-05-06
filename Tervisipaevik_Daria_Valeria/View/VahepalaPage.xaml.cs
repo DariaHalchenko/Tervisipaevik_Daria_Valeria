@@ -23,7 +23,7 @@ public partial class VahepalaPage : ContentPage
 
     public VahepalaPage()
     {
-        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tervisepaevik.db");
+        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
         database = new VahepalaDatabase(dbPath);
 
         Title = "Vahepala";
