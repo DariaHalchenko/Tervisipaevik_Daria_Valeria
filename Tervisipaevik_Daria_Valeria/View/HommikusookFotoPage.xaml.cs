@@ -6,16 +6,31 @@ namespace Tervisipaevik_Daria_Valeria.View
     public partial class HommikusookFotoPage : ContentPage
     {
         private HommikusookDatabase database;
-        Button btn_lisa;
+        private Button btn_lisa;
+        private Grid grid;
+
         public HommikusookFotoPage()
         {
             Title = "Toidufotod";
 
             btn_lisa = new Button
             {
-                Text = "Lisa"
+                Text = "Lisa",
+                HorizontalOptions = LayoutOptions.FillAndExpand
             };
             btn_lisa.Clicked += Btn_lisa_Clicked;
+
+            grid = new Grid
+            {
+                Padding = 10,
+                RowSpacing = 10,
+                ColumnSpacing = 10
+            };
+
+            for (int i = 0; i < 3; i++)
+            {
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+            }
 
             string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
             database = new HommikusookDatabase(dbPath);
@@ -23,21 +38,24 @@ namespace Tervisipaevik_Daria_Valeria.View
             var imageList = new List<HommikusookClass>(database.GetHommikusook()
                 .Where(x => x.Toidu_foto != null && x.Toidu_foto.Length > 0));
 
-            var sl = new StackLayout
-            {
-                Padding = 10,
-                Spacing = 10
-            };
-            sl.Children.Add(btn_lisa);
+            int rida = 0;
+            int veerg = 0;
+
             foreach (var item in imageList)
             {
+                if (veerg == 0)
+                {
+                    grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                }
+
                 string tempFilePath = Path.Combine(FileSystem.CacheDirectory, $"image_{item.Hommikusook_id}.jpg");
                 File.WriteAllBytes(tempFilePath, item.Toidu_foto);
 
                 var image = new Image
                 {
                     Source = ImageSource.FromFile(tempFilePath),
-                    HeightRequest = 200,
+                    HeightRequest = 100,
+                    WidthRequest = 100,
                     Aspect = Aspect.AspectFill
                 };
 
@@ -56,9 +74,30 @@ namespace Tervisipaevik_Daria_Valeria.View
                 };
 
                 image.GestureRecognizers.Add(tap);
-                sl.Children.Add(image);
+
+                grid.Children.Add(image);
+                Grid.SetRow(image, rida);
+                Grid.SetColumn(image, veerg);
+
+                veerg++;
+                if (veerg == 3)
+                {
+                    veerg = 0;
+                    rida++;
+                }
             }
-            Content = new ScrollView { Content = sl };
+
+            var vsl = new VerticalStackLayout
+            {
+                Padding = 10,
+                Spacing = 10,
+                Children = { btn_lisa, grid }
+            };
+
+            Content = new ScrollView
+            {
+                Content = vsl
+            };
         }
 
         private async void Btn_lisa_Clicked(object? sender, EventArgs e)

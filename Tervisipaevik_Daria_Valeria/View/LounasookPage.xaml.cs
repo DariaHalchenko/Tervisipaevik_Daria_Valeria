@@ -1,4 +1,5 @@
-﻿using Tervisipaevik_Daria_Valeria.Database;
+﻿using System.Globalization;
+using Tervisipaevik_Daria_Valeria.Database;
 using Tervisipaevik_Daria_Valeria.Models;
 
 namespace Tervisipaevik_Daria_Valeria.View;
@@ -13,13 +14,13 @@ public partial class LounasookPage : ContentPage
     private EntryCell ec_roaNimi, ec_valgud, ec_rasvad, ec_susivesikud, ec_kalorid;
     private DatePicker dp_kuupaev;
     private TimePicker tp_kallaaeg;
-    private ImageCell ic;
+    private Image img;
 
     private TableView tableview;
     private TableSection fotoSection;
     private ListView lounasookListView;
 
-    private Button btn_salvesta, btn_kustuta, btn_puhastada, btn_pildista, btn_valifoto;
+    private Button btn_salvesta, btn_kustuta, btn_puhastada, btn_pildista, btn_valifoto, btn_hide;
 
     public LounasookPage()
     {
@@ -42,21 +43,16 @@ public partial class LounasookPage : ContentPage
         btn_puhastada = new Button { Text = "Uus sisestus" };
         btn_pildista = new Button { Text = "Tee foto" };
         btn_valifoto = new Button { Text = "Vali foto" };
-
-
+        btn_hide = new Button { Text = "Näita loendit" };
 
         btn_salvesta.Clicked += Btn_salvesta_Clicked;
         btn_kustuta.Clicked += Btn_kustuta_Clicked;
         btn_puhastada.Clicked += Btn_puhastada_Clicked;
         btn_pildista.Clicked += Btn_pildista_Clicked;
         btn_valifoto.Clicked += Btn_valifoto_Clicked;
+        btn_hide.Clicked += Btn_hide_Clicked;
 
-
-        ic = new ImageCell
-        {
-            Text = "Foto nimetus",
-            Detail = "Foto kirjeldus"
-        };
+        img = new Image();
 
         fotoSection = new TableSection("Foto");
 
@@ -64,58 +60,93 @@ public partial class LounasookPage : ContentPage
         {
             Intent = TableIntent.Form,
             Root = new TableRoot("Sisesta Lounasook")
+            {
+                new TableSection("Üldandmed")
                 {
-                    new TableSection("Üldandmed")
+                    new ViewCell { View = dp_kuupaev },
+                    new ViewCell { View = tp_kallaaeg },
+                    ec_roaNimi,
+                    ec_valgud,
+                    ec_rasvad,
+                    ec_susivesikud,
+                    ec_kalorid
+                },
+                fotoSection,
+                new TableSection("Tegevused")
+                {
+                    new ViewCell
                     {
-                        new ViewCell { View = dp_kuupaev },
-                        new ViewCell { View = tp_kallaaeg },
-                        ec_roaNimi,
-                        ec_valgud,
-                        ec_rasvad,
-                        ec_susivesikud,
-                        ec_kalorid
-                    },
-                    fotoSection,
-                    new TableSection("Tegevused")
-                    {
-                        new ViewCell
+                        View = new StackLayout
                         {
-                            View = new StackLayout
-                            {
-                                Orientation = StackOrientation.Horizontal,
-                                HorizontalOptions = LayoutOptions.Center,
-                                Children = { btn_salvesta, btn_kustuta, btn_puhastada }
-                            }
+                            Orientation = StackOrientation.Horizontal,
+                            HorizontalOptions = LayoutOptions.Center,
+                            Children = { btn_salvesta, btn_kustuta, btn_puhastada }
                         }
-                    },
-                    new TableSection("FOTO")
+                    }
+                },
+                new TableSection("FOTO")
+                {
+                    new ViewCell
                     {
-                        new ViewCell
+                        View = new StackLayout
                         {
-                            View = new StackLayout
-                            {
-                                Orientation = StackOrientation.Horizontal,
-                                HorizontalOptions = LayoutOptions.Center,
-                                Children = { btn_valifoto, btn_pildista }
-                            }
+                            Orientation = StackOrientation.Horizontal,
+                            HorizontalOptions = LayoutOptions.Center,
+                            Children = { btn_valifoto, btn_pildista }
                         }
                     }
                 }
+            }
         };
 
         lounasookListView = new ListView
         {
+            SeparatorColor = Colors.DarkViolet,
+            BackgroundColor = Colors.WhiteSmoke,
+            Header = "Lounasöögid",
+            HasUnevenRows = true,
             ItemTemplate = new DataTemplate(() =>
             {
-                var textCell = new TextCell();
-                textCell.SetBinding(TextCell.TextProperty, "Roa_nimi");
-                textCell.SetBinding(TextCell.DetailProperty, new Binding("Kuupaev", stringFormat: "{0:d}"));
-                return textCell;
-            }),
-            HeightRequest = 250
+                // Картинка
+                Image img = new Image { WidthRequest = 60, HeightRequest = 60 };
+                img.SetBinding(Image.SourceProperty, new Binding("Toidu_foto", converter: new ByteArrayToImageSourceConverter()));
+
+                // Название блюда
+                Label nimi = new Label { FontSize = 16, FontAttributes = FontAttributes.Bold };
+                nimi.SetBinding(Label.TextProperty, "Roa_nimi");
+
+                // Калории
+                Label kalorid = new Label { FontSize = 14 };
+                kalorid.SetBinding(Label.TextProperty, new Binding("Kalorid", stringFormat: "Kalorid: {0}"));
+
+                // Дата
+                Label kuupaev = new Label { FontSize = 14 };
+                kuupaev.SetBinding(Label.TextProperty, new Binding("Kuupaev", stringFormat: "Kuupäev: {0:d}"));
+
+                return new ViewCell
+                {
+                    View = new StackLayout
+                    {
+                        Orientation = StackOrientation.Horizontal,
+                        Padding = new Thickness(10),
+                        Children =
+                {
+                    img,
+                    new StackLayout
+                    {
+                        Orientation = StackOrientation.Vertical,
+                        Padding = new Thickness(10, 0),
+                        Children = { nimi, kalorid, kuupaev }
+                    }
+                }
+                    }
+                };
+            })
         };
 
-        lounasookListView.ItemSelected += VahepalaListView_ItemSelected;
+
+
+        lounasookListView.ItemSelected += LounasookListView_ItemSelected;
 
         Content = new ScrollView
         {
@@ -124,18 +155,19 @@ public partial class LounasookPage : ContentPage
                 Padding = 10,
                 Children =
                     {
+                        btn_hide,
                         tableview,
-                        new Label { Text = "Salvestatud Ohtusook", FontAttributes = FontAttributes.Bold },
+                        new Label { Text = "Salvestatud lõunasöögid", FontAttributes = FontAttributes.Bold },
                         lounasookListView
                     }
             }
         };
 
-        LoadData();
+        AndmeteLaadimine();
     }
 
 
-    private void Btn_puhastada_Clicked(object sender, EventArgs e) => ClearForm();
+    private void Btn_puhastada_Clicked(object sender, EventArgs e) => SelgeVorm();
 
     private async void Btn_valifoto_Clicked(object sender, EventArgs e)
     {
@@ -168,12 +200,17 @@ public partial class LounasookPage : ContentPage
             fotoBytes = ms.ToArray();
 
             File.WriteAllBytes(lisafoto, fotoBytes);
-            ic.ImageSource = ImageSource.FromFile(lisafoto);
+
+            img.Source = ImageSource.FromFile(lisafoto);  // Обновляем источник изображения
 
             fotoSection.Clear();
-            fotoSection.Add(ic);
+            var imageViewCell = new ViewCell
+            {
+                View = img  // Добавляем Image вместо ImageCell
+            };
+            fotoSection.Add(imageViewCell);  // Добавляем ViewCell с Image
 
-            await Shell.Current.DisplayAlert("Edu", "Foto on edukalt salvestatud", "Ok");
+            await Shell.Current.DisplayAlert("Edu", "Foto on edukalt salvestatud", "OK");
         }
     }
 
@@ -196,8 +233,8 @@ public partial class LounasookPage : ContentPage
             selectedItem.Toidu_foto = fotoBytes;
 
         database.SaveLounasook(selectedItem);
-        ClearForm();
-        LoadData();
+        SelgeVorm();
+        AndmeteLaadimine();
     }
 
     private void Btn_kustuta_Clicked(object? sender, EventArgs e)
@@ -205,24 +242,23 @@ public partial class LounasookPage : ContentPage
         if (selectedItem != null)
         {
             database.DeleteLounasook(selectedItem.Lounasook_id);
-            ClearForm();
-            LoadData();
+            SelgeVorm();
+            AndmeteLaadimine();
         }
     }
 
     private void ClearButton_Clicked(object? sender, EventArgs e)
     {
-        ClearForm();
+        SelgeVorm();
     }
 
-    private void VahepalaListView_ItemSelected(object? sender, SelectedItemChangedEventArgs e)
+    private int imageCounter = 1; // Счётчик для имен файлов
+
+    private void LounasookListView_ItemSelected(object? sender, SelectedItemChangedEventArgs e)
     {
         selectedItem = e.SelectedItem as LounasookClass;
         if (selectedItem != null)
         {
-            selectedItem = e.SelectedItem as LounasookClass;
-            if (selectedItem == null) return;
-
             ec_roaNimi.Text = selectedItem.Roa_nimi;
             ec_valgud.Text = selectedItem.Valgud.ToString();
             ec_rasvad.Text = selectedItem.Rasvad.ToString();
@@ -234,12 +270,26 @@ public partial class LounasookPage : ContentPage
 
             if (selectedItem.Toidu_foto != null && selectedItem.Toidu_foto.Length > 0)
             {
-                string tempFilePath = Path.Combine(FileSystem.CacheDirectory, "temp_selected_image.jpg");
-                File.WriteAllBytes(tempFilePath, selectedItem.Toidu_foto);
-                ic.ImageSource = ImageSource.FromFile(tempFilePath);
-
                 fotoSection.Clear();
-                fotoSection.Add(ic);
+
+                // Генерация уникального имени файла (можно привязать к ID или дате)
+                string imageFileName = $"img_{Guid.NewGuid()}.jpg";
+                string imagePath = Path.Combine(FileSystem.AppDataDirectory, imageFileName);
+
+                // Сохраняем в постоянную директорию
+                File.WriteAllBytes(imagePath, selectedItem.Toidu_foto);
+
+                // Создаём Image и обновляем источник
+                var newImage = new Image
+                {
+                    Source = ImageSource.FromFile(imagePath),
+                    HeightRequest = 60,
+                    WidthRequest = 60,
+                    Aspect = Aspect.AspectFill
+                };
+
+                var imageViewCell = new ViewCell { View = newImage };
+                fotoSection.Add(imageViewCell);
             }
             else
             {
@@ -248,12 +298,13 @@ public partial class LounasookPage : ContentPage
         }
     }
 
-    public void LoadData()
+
+    public void AndmeteLaadimine()
     {
         lounasookListView.ItemsSource = database.GetLounasook().OrderByDescending(x => x.Kuupaev).ToList();
     }
 
-    public void ClearForm()
+    public void SelgeVorm()
     {
         selectedItem = null;
         fotoBytes = null;
@@ -263,5 +314,34 @@ public partial class LounasookPage : ContentPage
         lounasookListView.SelectedItem = null;
         btn_kustuta.IsVisible = false;
         fotoSection.Clear();
+    }
+    private void Btn_hide_Clicked(object sender, EventArgs e)
+    {
+        // Переключение видимости для обоих элементов
+        tableview.IsVisible = !tableview.IsVisible;
+        lounasookListView.IsVisible = !lounasookListView.IsVisible;
+
+        // Изменение текста кнопки в зависимости от текущего состояния
+        if (tableview.IsVisible)
+        {
+            btn_hide.Text = "Näita loendit"; // если tableview виден
+        }
+        else
+        {
+            btn_hide.Text = "Näita sisestust"; // если tableview скрыт
+        }
+    }
+
+    public class ByteArrayToImageSourceConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is byte[] bytes && bytes.Length > 0)
+                return ImageSource.FromStream(() => new MemoryStream(bytes));
+            return null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
     }
 }

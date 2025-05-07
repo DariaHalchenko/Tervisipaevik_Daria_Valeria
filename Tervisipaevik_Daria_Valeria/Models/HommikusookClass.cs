@@ -20,5 +20,6 @@ namespace Tervisipaevik_Daria_Valeria.Models
         public int Susivesikud { get; set; }
         public int Kalorid { get; set; }
         public byte[]? Toidu_foto { get; set; }
+        //public string? FotoPath { get; set; } 
     }
 }

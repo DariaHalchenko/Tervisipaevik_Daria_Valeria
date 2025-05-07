@@ -1,68 +1,108 @@
 ﻿using Tervisipaevik_Daria_Valeria.Database;
 using Tervisipaevik_Daria_Valeria.Models;
 
-namespace Tervisipaevik_Daria_Valeria.View;
-
-public partial class VahepalaFotoPage : ContentPage
+namespace Tervisipaevik_Daria_Valeria.View
 {
-    private VahepalaDatabase database;
-    Button btn_lisa;
-    public VahepalaFotoPage()
+    public partial class VahepalaFotoPage : ContentPage
     {
-        Title = "Toidufotod";
-        btn_lisa = new Button
+        private VahepalaDatabase database;
+        private Button btn_lisa;
+        private Grid grid;
+
+        public VahepalaFotoPage()
         {
-            Text = "Lisa"
-        };
-        btn_lisa.Clicked += Btn_lisa_Clicked;
+            Title = "Toidufotod";
 
-        string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
-        database = new VahepalaDatabase(dbPath);
-
-        var imageList = new List<VahepalaClass>(database.GetVahepala()
-            .Where(x => x.Toidu_foto != null && x.Toidu_foto.Length > 0));
-
-        var sl = new StackLayout
-        {
-            Padding = 10,
-            Spacing = 10
-        };
-        sl.Children.Add(btn_lisa);
-        foreach (var item in imageList)
-        {
-            string tempFilePath = Path.Combine(FileSystem.CacheDirectory, $"image_{item.Vahepala_id}.jpg");
-            File.WriteAllBytes(tempFilePath, item.Toidu_foto);
-
-            var image = new Image
+            btn_lisa = new Button
             {
-                Source = ImageSource.FromFile(tempFilePath),
-                HeightRequest = 200,
-                Aspect = Aspect.AspectFill
+                Text = "Lisa",
+                HorizontalOptions = LayoutOptions.FillAndExpand
+            };
+            btn_lisa.Clicked += Btn_lisa_Clicked;
+
+            grid = new Grid
+            {
+                Padding = 10,
+                RowSpacing = 10,
+                ColumnSpacing = 10
             };
 
-            var tap = new TapGestureRecognizer();
-            tap.Tapped += async (s, e) =>
+            for (int i = 0; i < 3; i++)
             {
-                string info = $"Roa nimi: {item.Roa_nimi}\n" +
-                              $"Kuupäev: {item.Kuupaev:dd.MM.yyyy}\n" +
-                              $"Kellaaeg: {item.Kallaaeg:hh\\:mm}\n" +
-                              $"Valgud: {item.Valgud} g\n" +
-                              $"Rasvad: {item.Rasvad} g\n" +
-                              $"Süsivesikud: {item.Susivesikud} g\n" +
-                              $"Kalorid: {item.Kalorid} kcal";
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
+            }
 
-                await Shell.Current.DisplayAlert("Toiduandmed", info, "OK");
+            string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
+            database = new VahepalaDatabase(dbPath);
+
+            var imageList = new List<VahepalaClass>(database.GetVahepala()
+                .Where(x => x.Toidu_foto != null && x.Toidu_foto.Length > 0));
+
+            int rida = 0;
+            int veerg = 0;
+
+            foreach (var item in imageList)
+            {
+                if (veerg == 0)
+                {
+                    grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                }
+
+                string tempFilePath = Path.Combine(FileSystem.CacheDirectory, $"image_{item.Vahepala_id}.jpg");
+                File.WriteAllBytes(tempFilePath, item.Toidu_foto);
+
+                var image = new Image
+                {
+                    Source = ImageSource.FromFile(tempFilePath),
+                    HeightRequest = 100,
+                    WidthRequest = 100,
+                    Aspect = Aspect.AspectFill
+                };
+
+                var tap = new TapGestureRecognizer();
+                tap.Tapped += async (s, e) =>
+                {
+                    string info = $"Roa nimi: {item.Roa_nimi}\n" +
+                                  $"Kuupäev: {item.Kuupaev:dd.MM.yyyy}\n" +
+                                  $"Kellaaeg: {item.Kallaaeg:hh\\:mm}\n" +
+                                  $"Valgud: {item.Valgud} g\n" +
+                                  $"Rasvad: {item.Rasvad} g\n" +
+                                  $"Süsivesikud: {item.Susivesikud} g\n" +
+                                  $"Kalorid: {item.Kalorid} kcal";
+
+                    await Shell.Current.DisplayAlert("Toiduandmed", info, "OK");
+                };
+
+                image.GestureRecognizers.Add(tap);
+
+                grid.Children.Add(image);
+                Grid.SetRow(image, rida);
+                Grid.SetColumn(image, veerg);
+
+                veerg++;
+                if (veerg == 3)
+                {
+                    veerg = 0;
+                    rida++;
+                }
+            }
+
+            var vsl = new VerticalStackLayout
+            {
+                Padding = 10,
+                Spacing = 10,
+                Children = { btn_lisa, grid }
             };
 
-            image.GestureRecognizers.Add(tap);
-
-            sl.Children.Add(image);
+            Content = new ScrollView
+            {
+                Content = vsl
+            };
         }
-        Content = new ScrollView { Content = sl };
-    }
 
-    private async void Btn_lisa_Clicked(object? sender, EventArgs e)
-    {
-        await Navigation.PushAsync(new VahepalaPage());
+        private async void Btn_lisa_Clicked(object? sender, EventArgs e)
+        {
+            await Navigation.PushAsync(new VahepalaPage());
+        }
     }
 }
