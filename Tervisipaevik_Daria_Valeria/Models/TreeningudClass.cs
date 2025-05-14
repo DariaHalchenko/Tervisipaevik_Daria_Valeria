@@ -16,7 +16,9 @@ namespace Tervisipaevik_Daria_Valeria.Models
         public DateTime Kuupaev { get; set; }
         public TimeSpan Kallaaeg { get; set; }
         public string Treeningu_tuup { get; set; }
-        public int Sammude_Arv { get; set; }
+        public string Kirjeldus { get; set; }
+        public string Link { get; set; }
         public int Kulutud_kalorid { get; set; }
+        public byte[]? Treeningu_foto { get; set; }
     }
 }

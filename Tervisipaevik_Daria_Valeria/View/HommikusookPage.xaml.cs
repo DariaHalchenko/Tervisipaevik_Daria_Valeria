@@ -27,7 +27,7 @@ public partial class HommikusookPage : ContentPage
         string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
         database = new HommikusookDatabase(dbPath);
 
-        Title = "Hommikusook";
+        Title = "Hommikusöök";
 
         ec_roaNimi = new EntryCell { Label = "Roa nimi", Placeholder = "nt. Puder" };
         ec_valgud = new EntryCell { Label = "Valgud", Placeholder = "g", Keyboard = Keyboard.Numeric };
@@ -59,7 +59,7 @@ public partial class HommikusookPage : ContentPage
         tableview = new TableView
         {
             Intent = TableIntent.Form,
-            Root = new TableRoot("Sisesta Hommikusook")
+            Root = new TableRoot("Sisesta Hommikusöök")
             {
                 new TableSection("Üldandmed")
                 {
@@ -157,7 +157,7 @@ public partial class HommikusookPage : ContentPage
                     {
                         btn_hide,
                         tableview,
-                        new Label { Text = "Salvestatud Ohtusook", FontAttributes = FontAttributes.Bold },
+                        new Label { Text = "Salvestatud Hommikusöök", FontAttributes = FontAttributes.Bold },
                         hommikusookListView
                     }
             }
@@ -210,7 +210,7 @@ public partial class HommikusookPage : ContentPage
             };
             fotoSection.Add(imageViewCell);  // Добавляем ViewCell с Image
 
-            await Shell.Current.DisplayAlert("Успех", "Фото успешно сохранено", "OK");
+            await Shell.Current.DisplayAlert("Edu", "Foto on edukalt salvestatud", "OK");
         }
     }
 
@@ -317,18 +317,15 @@ public partial class HommikusookPage : ContentPage
     }
     private void Btn_hide_Clicked(object sender, EventArgs e)
     {
-        // Переключение видимости для обоих элементов
-        tableview.IsVisible = !tableview.IsVisible;
-        hommikusookListView.IsVisible = !hommikusookListView.IsVisible;
-
-        // Изменение текста кнопки в зависимости от текущего состояния
         if (tableview.IsVisible)
         {
-            btn_hide.Text = "Näita loendit"; // если tableview виден
+            tableview.IsVisible = false;
+            hommikusookListView.IsVisible = true;
         }
         else
         {
-            btn_hide.Text = "Näita sisestust"; // если tableview скрыт
+            tableview.IsVisible = true;
+            hommikusookListView.IsVisible = false;
         }
     }
 

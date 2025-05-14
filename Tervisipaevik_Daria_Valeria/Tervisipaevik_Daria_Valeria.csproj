@@ -57,9 +57,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Resources\Images\energia.png" />
 	  <None Remove="Resources\Images\hommikusook.jpg" />
 	  <None Remove="Resources\Images\louna.jpg" />
 	  <None Remove="Resources\Images\ohtusook.jpg" />
+	  <None Remove="Resources\Images\suda.jpg" />
 	  <None Remove="Resources\Images\tuju1.jpg" />
 	  <None Remove="Resources\Images\tuju2.jpg" />
 	  <None Remove="Resources\Images\tuju3.jpg" />
@@ -106,6 +108,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="View\OhtusookPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="View\TreeningudFotoPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="View\TreeningudPage.xaml">

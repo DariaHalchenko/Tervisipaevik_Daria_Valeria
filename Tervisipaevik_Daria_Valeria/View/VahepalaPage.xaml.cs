@@ -107,19 +107,15 @@ public partial class VahepalaPage : ContentPage
             HasUnevenRows = true,
             ItemTemplate = new DataTemplate(() =>
             {
-                // Картинка
                 Image img = new Image { WidthRequest = 60, HeightRequest = 60 };
                 img.SetBinding(Image.SourceProperty, new Binding("Toidu_foto", converter: new ByteArrayToImageSourceConverter()));
 
-                // Название блюда
                 Label nimi = new Label { FontSize = 16, FontAttributes = FontAttributes.Bold };
                 nimi.SetBinding(Label.TextProperty, "Roa_nimi");
 
-                // Калории
                 Label kalorid = new Label { FontSize = 14 };
                 kalorid.SetBinding(Label.TextProperty, new Binding("Kalorid", stringFormat: "Kalorid: {0}"));
 
-                // Дата
                 Label kuupaev = new Label { FontSize = 14 };
                 kuupaev.SetBinding(Label.TextProperty, new Binding("Kuupaev", stringFormat: "Kuupäev: {0:d}"));
 
@@ -201,14 +197,14 @@ public partial class VahepalaPage : ContentPage
 
             File.WriteAllBytes(lisafoto, fotoBytes);
 
-            img.Source = ImageSource.FromFile(lisafoto);  // Обновляем источник изображения
+            img.Source = ImageSource.FromFile(lisafoto);
 
             fotoSection.Clear();
             var imageViewCell = new ViewCell
             {
-                View = img  // Добавляем Image вместо ImageCell
+                View = img
             };
-            fotoSection.Add(imageViewCell);  // Добавляем ViewCell с Image
+            fotoSection.Add(imageViewCell);
 
             await Shell.Current.DisplayAlert("Edu", "Foto on edukalt salvestatud", "OK");
         }
@@ -252,7 +248,7 @@ public partial class VahepalaPage : ContentPage
         SelgeVorm();
     }
 
-    private int imageCounter = 1; // Счётчик для имен файлов
+    private int imageCounter = 1;
 
     private void VahepalaListView_ItemSelected(object? sender, SelectedItemChangedEventArgs e)
     {
@@ -271,15 +267,10 @@ public partial class VahepalaPage : ContentPage
             if (selectedItem.Toidu_foto != null && selectedItem.Toidu_foto.Length > 0)
             {
                 fotoSection.Clear();
-
-                // Генерация уникального имени файла (можно привязать к ID или дате)
                 string imageFileName = $"img_{Guid.NewGuid()}.jpg";
                 string imagePath = Path.Combine(FileSystem.AppDataDirectory, imageFileName);
-
-                // Сохраняем в постоянную директорию
                 File.WriteAllBytes(imagePath, selectedItem.Toidu_foto);
 
-                // Создаём Image и обновляем источник
                 var newImage = new Image
                 {
                     Source = ImageSource.FromFile(imagePath),
@@ -317,18 +308,15 @@ public partial class VahepalaPage : ContentPage
     }
     private void Btn_hide_Clicked(object sender, EventArgs e)
     {
-        // Переключение видимости для обоих элементов
-        tableview.IsVisible = !tableview.IsVisible;
-        vahepalaListView.IsVisible = !vahepalaListView.IsVisible;
-
-        // Изменение текста кнопки в зависимости от текущего состояния
         if (tableview.IsVisible)
         {
-            btn_hide.Text = "Näita loendit"; // если tableview виден
+            tableview.IsVisible = false;
+            vahepalaListView.IsVisible = true;
         }
         else
         {
-            btn_hide.Text = "Näita sisestust"; // если tableview скрыт
+            tableview.IsVisible = true;
+            vahepalaListView.IsVisible = false;
         }
     }
 

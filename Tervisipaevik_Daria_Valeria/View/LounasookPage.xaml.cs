@@ -317,18 +317,15 @@ public partial class LounasookPage : ContentPage
     }
     private void Btn_hide_Clicked(object sender, EventArgs e)
     {
-        // Переключение видимости для обоих элементов
-        tableview.IsVisible = !tableview.IsVisible;
-        lounasookListView.IsVisible = !lounasookListView.IsVisible;
-
-        // Изменение текста кнопки в зависимости от текущего состояния
         if (tableview.IsVisible)
         {
-            btn_hide.Text = "Näita loendit"; // если tableview виден
+            tableview.IsVisible = false;
+            lounasookListView.IsVisible = true;
         }
         else
         {
-            btn_hide.Text = "Näita sisestust"; // если tableview скрыт
+            tableview.IsVisible = true;
+            lounasookListView.IsVisible = false;
         }
     }
 
