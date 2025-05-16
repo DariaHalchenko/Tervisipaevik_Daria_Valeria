@@ -6,19 +6,11 @@ namespace Tervisipaevik_Daria_Valeria.View
     public partial class VahepalaFotoPage : ContentPage
     {
         private VahepalaDatabase database;
-        private Button btn_lisa;
         private Grid grid;
 
         public VahepalaFotoPage()
         {
             Title = "Toidufotod";
-
-            btn_lisa = new Button
-            {
-                Text = "Lisa",
-                HorizontalOptions = LayoutOptions.FillAndExpand
-            };
-            btn_lisa.Clicked += Btn_lisa_Clicked;
 
             grid = new Grid
             {
@@ -35,8 +27,9 @@ namespace Tervisipaevik_Daria_Valeria.View
             string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
             database = new VahepalaDatabase(dbPath);
 
-            var imageList = new List<VahepalaClass>(database.GetVahepala()
-                .Where(x => x.Toidu_foto != null && x.Toidu_foto.Length > 0));
+            var imageList = database.GetVahepala()
+                .Where(x => x.Toidu_foto != null && x.Toidu_foto.Length > 0)
+                .ToList();
 
             int rida = 0;
             int veerg = 0;
@@ -63,12 +56,12 @@ namespace Tervisipaevik_Daria_Valeria.View
                 tap.Tapped += async (s, e) =>
                 {
                     string info = $"Roa nimi: {item.Roa_nimi}\n" +
-                                  $"Kuupäev: {item.Kuupaev:dd.MM.yyyy}\n" +
-                                  $"Kellaaeg: {item.Kallaaeg:hh\\:mm}\n" +
-                                  $"Valgud: {item.Valgud} g\n" +
-                                  $"Rasvad: {item.Rasvad} g\n" +
-                                  $"Süsivesikud: {item.Susivesikud} g\n" +
-                                  $"Kalorid: {item.Kalorid} kcal";
+                                    $"Kuupäev: {item.Kuupaev:dd.MM.yyyy}\n" +
+                                    $"Kellaaeg: {item.Kallaaeg:hh\\:mm}\n" +
+                                    $"Valgud: {item.Valgud} g\n" +
+                                    $"Rasvad: {item.Rasvad} g\n" +
+                                    $"Süsivesikud: {item.Susivesikud} g\n" +
+                                    $"Kalorid: {item.Kalorid} kcal";
 
                     await Shell.Current.DisplayAlert("Toiduandmed", info, "OK");
                 };
@@ -87,22 +80,45 @@ namespace Tervisipaevik_Daria_Valeria.View
                 }
             }
 
-            var vsl = new VerticalStackLayout
+            var scrollview = new ScrollView
             {
+                Content = grid
+            };
+
+            var frame = new Frame
+            {
+                CornerRadius = 30,
+                HeightRequest = 60,
+                WidthRequest = 60,
+                BackgroundColor = Colors.White,
                 Padding = 10,
-                Spacing = 10,
-                Children = { btn_lisa, grid }
+                HasShadow = true,
+                Content = new ImageButton
+                {
+                    Source = "lisa.png",
+                    BackgroundColor = Colors.Transparent,
+                    Command = new Command(async () =>
+                    {
+                        await Navigation.PushAsync(new VahepalaPage());
+                    })
+                }
             };
 
-            Content = new ScrollView
+            Content = new Grid
             {
-                Content = vsl
-            };
-        }
+                Children =
+            {
+                scrollview,
 
-        private async void Btn_lisa_Clicked(object? sender, EventArgs e)
-        {
-            await Navigation.PushAsync(new VahepalaPage());
+                new Grid
+                {
+                    VerticalOptions = LayoutOptions.End,
+                    HorizontalOptions = LayoutOptions.End,
+                    Padding = 20,
+                    Children = { frame }
+                }
+            }
+            };
         }
     }
 }

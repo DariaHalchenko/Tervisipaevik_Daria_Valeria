@@ -59,6 +59,7 @@
 	<ItemGroup>
 	  <None Remove="Resources\Images\energia.png" />
 	  <None Remove="Resources\Images\hommikusook.jpg" />
+	  <None Remove="Resources\Images\lisa.png" />
 	  <None Remove="Resources\Images\louna.jpg" />
 	  <None Remove="Resources\Images\ohtusook.jpg" />
 	  <None Remove="Resources\Images\suda.jpg" />
@@ -99,9 +100,6 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="View\LounasookPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="View\MeeldetuletusedPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="View\OhtusookFotoPage.xaml">

@@ -18,9 +18,8 @@ public partial class VahepalaPage : ContentPage
 
     private TableView tableview;
     private TableSection fotoSection;
-    private ListView vahepalaListView;
 
-    private Button btn_salvesta, btn_kustuta, btn_puhastada, btn_pildista, btn_valifoto, btn_hide;
+    private Button btn_salvesta, btn_kustuta, btn_puhastada, btn_pildista, btn_valifoto;
 
     public VahepalaPage()
     {
@@ -43,14 +42,12 @@ public partial class VahepalaPage : ContentPage
         btn_puhastada = new Button { Text = "Uus sisestus" };
         btn_pildista = new Button { Text = "Tee foto" };
         btn_valifoto = new Button { Text = "Vali foto" };
-        btn_hide = new Button { Text = "Näita loendit" };
 
         btn_salvesta.Clicked += Btn_salvesta_Clicked;
         btn_kustuta.Clicked += Btn_kustuta_Clicked;
         btn_puhastada.Clicked += Btn_puhastada_Clicked;
         btn_pildista.Clicked += Btn_pildista_Clicked;
         btn_valifoto.Clicked += Btn_valifoto_Clicked;
-        btn_hide.Clicked += Btn_hide_Clicked;
 
         img = new Image();
 
@@ -59,7 +56,7 @@ public partial class VahepalaPage : ContentPage
         tableview = new TableView
         {
             Intent = TableIntent.Form,
-            Root = new TableRoot("Sisesta vahepala")
+            Root = new TableRoot("Sisesta Lounasöök")
             {
                 new TableSection("Üldandmed")
                 {
@@ -99,71 +96,19 @@ public partial class VahepalaPage : ContentPage
             }
         };
 
-        vahepalaListView = new ListView
-        {
-            SeparatorColor = Colors.DarkViolet,
-            BackgroundColor = Colors.WhiteSmoke,
-            Header = "Vahepalad",
-            HasUnevenRows = true,
-            ItemTemplate = new DataTemplate(() =>
-            {
-                Image img = new Image { WidthRequest = 60, HeightRequest = 60 };
-                img.SetBinding(Image.SourceProperty, new Binding("Toidu_foto", converter: new ByteArrayToImageSourceConverter()));
-
-                Label nimi = new Label { FontSize = 16, FontAttributes = FontAttributes.Bold };
-                nimi.SetBinding(Label.TextProperty, "Roa_nimi");
-
-                Label kalorid = new Label { FontSize = 14 };
-                kalorid.SetBinding(Label.TextProperty, new Binding("Kalorid", stringFormat: "Kalorid: {0}"));
-
-                Label kuupaev = new Label { FontSize = 14 };
-                kuupaev.SetBinding(Label.TextProperty, new Binding("Kuupaev", stringFormat: "Kuupäev: {0:d}"));
-
-                return new ViewCell
-                {
-                    View = new StackLayout
-                    {
-                        Orientation = StackOrientation.Horizontal,
-                        Padding = new Thickness(10),
-                        Children =
-                {
-                    img,
-                    new StackLayout
-                    {
-                        Orientation = StackOrientation.Vertical,
-                        Padding = new Thickness(10, 0),
-                        Children = { nimi, kalorid, kuupaev }
-                    }
-                }
-                    }
-                };
-            })
-        };
-
-
-
-        vahepalaListView.ItemSelected += VahepalaListView_ItemSelected;
-
         Content = new ScrollView
         {
             Content = new StackLayout
             {
                 Padding = 10,
                 Children =
-                    {
-                        btn_hide,
-                        tableview,
-                        new Label { Text = "Salvestatud vahepalad", FontAttributes = FontAttributes.Bold },
-                        vahepalaListView
-                    }
+                {
+                    tableview
+                }
             }
         };
-
-        AndmeteLaadimine();
     }
-
-
-    private void Btn_puhastada_Clicked(object sender, EventArgs e) => SelgeVorm();
+    private void Btn_puhastada_Clicked(object sender, EventArgs e) => ClearForm();
 
     private async void Btn_valifoto_Clicked(object sender, EventArgs e)
     {
@@ -229,8 +174,7 @@ public partial class VahepalaPage : ContentPage
             selectedItem.Toidu_foto = fotoBytes;
 
         database.SaveVahepala(selectedItem);
-        SelgeVorm();
-        AndmeteLaadimine();
+        ClearForm();
     }
 
     private void Btn_kustuta_Clicked(object? sender, EventArgs e)
@@ -238,86 +182,19 @@ public partial class VahepalaPage : ContentPage
         if (selectedItem != null)
         {
             database.DeleteVahepala(selectedItem.Vahepala_id);
-            SelgeVorm();
-            AndmeteLaadimine();
+            ClearForm();
         }
     }
 
-    private void ClearButton_Clicked(object? sender, EventArgs e)
-    {
-        SelgeVorm();
-    }
-
-    private int imageCounter = 1;
-
-    private void VahepalaListView_ItemSelected(object? sender, SelectedItemChangedEventArgs e)
-    {
-        selectedItem = e.SelectedItem as VahepalaClass;
-        if (selectedItem != null)
-        {
-            ec_roaNimi.Text = selectedItem.Roa_nimi;
-            ec_valgud.Text = selectedItem.Valgud.ToString();
-            ec_rasvad.Text = selectedItem.Rasvad.ToString();
-            ec_susivesikud.Text = selectedItem.Susivesikud.ToString();
-            ec_kalorid.Text = selectedItem.Kalorid.ToString();
-            dp_kuupaev.Date = selectedItem.Kuupaev;
-            tp_kallaaeg.Time = selectedItem.Kallaaeg;
-            btn_kustuta.IsVisible = true;
-
-            if (selectedItem.Toidu_foto != null && selectedItem.Toidu_foto.Length > 0)
-            {
-                fotoSection.Clear();
-                string imageFileName = $"img_{Guid.NewGuid()}.jpg";
-                string imagePath = Path.Combine(FileSystem.AppDataDirectory, imageFileName);
-                File.WriteAllBytes(imagePath, selectedItem.Toidu_foto);
-
-                var newImage = new Image
-                {
-                    Source = ImageSource.FromFile(imagePath),
-                    HeightRequest = 60,
-                    WidthRequest = 60,
-                    Aspect = Aspect.AspectFill
-                };
-
-                var imageViewCell = new ViewCell { View = newImage };
-                fotoSection.Add(imageViewCell);
-            }
-            else
-            {
-                fotoSection.Clear();
-            }
-        }
-    }
-
-
-    public void AndmeteLaadimine()
-    {
-        vahepalaListView.ItemsSource = database.GetVahepala().OrderByDescending(x => x.Kuupaev).ToList();
-    }
-
-    public void SelgeVorm()
+    private void ClearForm()
     {
         selectedItem = null;
         fotoBytes = null;
         ec_roaNimi.Text = ec_valgud.Text = ec_rasvad.Text = ec_susivesikud.Text = ec_kalorid.Text = string.Empty;
         dp_kuupaev.Date = DateTime.Now;
         tp_kallaaeg.Time = TimeSpan.FromHours(8);
-        vahepalaListView.SelectedItem = null;
         btn_kustuta.IsVisible = false;
         fotoSection.Clear();
-    }
-    private void Btn_hide_Clicked(object sender, EventArgs e)
-    {
-        if (tableview.IsVisible)
-        {
-            tableview.IsVisible = false;
-            vahepalaListView.IsVisible = true;
-        }
-        else
-        {
-            tableview.IsVisible = true;
-            vahepalaListView.IsVisible = false;
-        }
     }
 
     public class ByteArrayToImageSourceConverter : IValueConverter
@@ -333,4 +210,3 @@ public partial class VahepalaPage : ContentPage
             => throw new NotImplementedException();
     }
 }
-

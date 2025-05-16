@@ -16,6 +16,8 @@ namespace Tervisipaevik_Daria_Valeria.Models
         public string Roa_nimi { get; set; }
         public DateTime Kuupaev { get; set; }
         public int Kalorid { get; set; }
-
+        public byte[]? Toidu_foto { get; set; }
+        public ImageSource FotoSource =>
+        Toidu_foto != null ? ImageSource.FromStream(() => new MemoryStream(Toidu_foto)) : null;
     }
 }

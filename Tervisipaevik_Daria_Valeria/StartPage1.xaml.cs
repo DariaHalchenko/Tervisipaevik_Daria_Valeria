@@ -9,11 +9,11 @@ public partial class StartPage1 : ContentPage
     ImageButton btn_hommikusook, btn_louna, btn_ohtusook, btn_vahepala;
     Label lbl_hommikusook, lbl_louna, lbl_ohtusook, lbl_vahepala;
 
-    string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "tervisepaevik.db");
+    string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
 
     private List<DayFoodGroup> GetNadalaToidud(string dbPath)
     {
-        DateTime startDate = DateTime.Today.AddDays(-6); 
+        DateTime startDate = DateTime.Today.AddDays(-6);
         DateTime today = DateTime.Today;
 
         var hommik = new HommikusookDatabase(dbPath).GetHommikusook().Where(x => x.Kuupaev >= startDate && x.Kuupaev <= today);
@@ -22,10 +22,38 @@ public partial class StartPage1 : ContentPage
         var vahepala = new VahepalaDatabase(dbPath).GetVahepala().Where(x => x.Kuupaev >= startDate && x.Kuupaev <= today);
 
         var allMeals = new List<ToidukorradClass>();
-        allMeals.AddRange(hommik.Select(x => new ToidukorradClass { Tuup = "Hommikusöök", Roa_nimi = x.Roa_nimi, Kuupaev = x.Kuupaev, Kalorid = x.Kalorid }));
-        allMeals.AddRange(louna.Select(x => new ToidukorradClass { Tuup = "Lõuna", Roa_nimi = x.Roa_nimi, Kuupaev = x.Kuupaev, Kalorid = x.Kalorid }));
-        allMeals.AddRange(ohtu.Select(x => new ToidukorradClass { Tuup = "Õhtusöök", Roa_nimi = x.Roa_nimi, Kuupaev = x.Kuupaev, Kalorid = x.Kalorid }));
-        allMeals.AddRange(vahepala.Select(x => new ToidukorradClass { Tuup = "Vahepala", Roa_nimi = x.Roa_nimi, Kuupaev = x.Kuupaev, Kalorid = x.Kalorid }));
+        allMeals.AddRange(hommik.Select(x => new ToidukorradClass
+        {
+            Tuup = "Hommikusöök",
+            Roa_nimi = x.Roa_nimi,
+            Kuupaev = x.Kuupaev,
+            Kalorid = x.Kalorid,
+            Toidu_foto = x.Toidu_foto
+        }));
+        allMeals.AddRange(louna.Select(x => new ToidukorradClass
+        {
+            Tuup = "Lõuna",
+            Roa_nimi = x.Roa_nimi,
+            Kuupaev = x.Kuupaev,
+            Kalorid = x.Kalorid,
+            Toidu_foto = x.Toidu_foto
+        }));
+        allMeals.AddRange(ohtu.Select(x => new ToidukorradClass
+        {
+            Tuup = "Õhtusöök",
+            Roa_nimi = x.Roa_nimi,
+            Kuupaev = x.Kuupaev,
+            Kalorid = x.Kalorid,
+            Toidu_foto = x.Toidu_foto
+        }));
+        allMeals.AddRange(vahepala.Select(x => new ToidukorradClass
+        {
+            Tuup = "Vahepala",
+            Roa_nimi = x.Roa_nimi,
+            Kuupaev = x.Kuupaev,
+            Kalorid = x.Kalorid,
+            Toidu_foto = x.Toidu_foto
+        }));
 
         return Enumerable.Range(0, 7)
             .Select(offset =>
@@ -62,13 +90,20 @@ public partial class StartPage1 : ContentPage
                 };
                 dateLabel.SetBinding(Label.TextProperty, new Binding("DateTime", stringFormat: "{0:dd.MM.yyyy}"));
 
-                var foodListLayout = new StackLayout();
-
                 var foodsLayout = new StackLayout();
                 foodsLayout.SetBinding(BindableLayout.ItemsSourceProperty, "Foods");
 
                 BindableLayout.SetItemTemplate(foodsLayout, new DataTemplate(() =>
                 {
+                    var image = new Image
+                    {
+                        HeightRequest = 50,
+                        WidthRequest = 50,
+                        Aspect = Aspect.AspectFill,
+                        Margin = new Thickness(0, 0, 10, 0)
+                    };
+                    image.SetBinding(Image.SourceProperty, "FotoSource");
+
                     var typeLabel = new Label
                     {
                         FontAttributes = FontAttributes.Bold,
@@ -82,9 +117,16 @@ public partial class StartPage1 : ContentPage
                     var kcalLabel = new Label();
                     kcalLabel.SetBinding(Label.TextProperty, new Binding("Kalorid", stringFormat: "{0} kcal"));
 
+                    var textStack = new StackLayout
+                    {
+                        Orientation = StackOrientation.Vertical,
+                        Children = { typeLabel, nameLabel, kcalLabel }
+                    };
+
                     return new StackLayout
                     {
-                        Children = { typeLabel, nameLabel, kcalLabel },
+                        Orientation = StackOrientation.Horizontal,
+                        Children = { image, textStack },
                         Margin = new Thickness(0, 10, 0, 10)
                     };
                 }));

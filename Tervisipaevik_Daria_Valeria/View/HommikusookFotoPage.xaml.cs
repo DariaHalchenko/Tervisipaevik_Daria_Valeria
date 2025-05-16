@@ -6,19 +6,11 @@ namespace Tervisipaevik_Daria_Valeria.View
     public partial class HommikusookFotoPage : ContentPage
     {
         private HommikusookDatabase database;
-        private Button btn_lisa;
         private Grid grid;
 
         public HommikusookFotoPage()
         {
             Title = "Toidufotod";
-
-            btn_lisa = new Button
-            {
-                Text = "Lisa",
-                HorizontalOptions = LayoutOptions.FillAndExpand
-            };
-            btn_lisa.Clicked += Btn_lisa_Clicked;
 
             grid = new Grid
             {
@@ -35,8 +27,9 @@ namespace Tervisipaevik_Daria_Valeria.View
             string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tervisepaevik.db");
             database = new HommikusookDatabase(dbPath);
 
-            var imageList = new List<HommikusookClass>(database.GetHommikusook()
-                .Where(x => x.Toidu_foto != null && x.Toidu_foto.Length > 0));
+            var imageList = database.GetHommikusook()
+                .Where(x => x.Toidu_foto != null && x.Toidu_foto.Length > 0)
+                .ToList();
 
             int rida = 0;
             int veerg = 0;
@@ -87,22 +80,45 @@ namespace Tervisipaevik_Daria_Valeria.View
                 }
             }
 
-            var vsl = new VerticalStackLayout
+            var scrollview = new ScrollView
             {
+                Content = grid
+            };
+
+            var frame = new Frame
+            {
+                CornerRadius = 30,
+                HeightRequest = 60,
+                WidthRequest = 60,
+                BackgroundColor = Colors.White,
                 Padding = 10,
-                Spacing = 10,
-                Children = { btn_lisa, grid }
+                HasShadow = true,
+                Content = new ImageButton
+                {
+                    Source = "lisa.png",
+                    BackgroundColor = Colors.Transparent,
+                    Command = new Command(async () =>
+                    {
+                        await Navigation.PushAsync(new HommikusookPage());
+                    })
+                }
             };
 
-            Content = new ScrollView
+            Content = new Grid
             {
-                Content = vsl
-            };
-        }
+                Children =
+                {
+                    scrollview,
 
-        private async void Btn_lisa_Clicked(object? sender, EventArgs e)
-        {
-            await Navigation.PushAsync(new HommikusookPage());
+                    new Grid
+                    {
+                        VerticalOptions = LayoutOptions.End,
+                        HorizontalOptions = LayoutOptions.End,
+                        Padding = 20,
+                        Children = { frame }
+                    }
+                }
+            };
         }
     }
 }
