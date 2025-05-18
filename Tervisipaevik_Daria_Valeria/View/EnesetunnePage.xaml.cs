@@ -15,7 +15,7 @@ namespace Tervisipaevik_Daria_Valeria.View
 
         ListView enesetunneListView;
         DatePicker dp_kuupaev;
-        Button btn_salvesta, btn_kustuta, btn_selge;
+        Button btn_salvesta, btn_kustuta, btn_puhastata;
 
         StackLayout sl_tuju, sl_energia;
         int selectedTuju = 0;
@@ -46,7 +46,7 @@ namespace Tervisipaevik_Daria_Valeria.View
             };
             btn_salvesta = new Button { Text = "Salvesta" };
             btn_kustuta = new Button { Text = "Kustuta", IsVisible = false };
-            btn_selge = new Button { Text = "Uus sisestus" };
+            btn_puhastata = new Button { Text = "Uus sisestus" };
 
             // TUJU (эмоции)
             sl_tuju = new StackLayout { Orientation = StackOrientation.Horizontal };
@@ -106,7 +106,7 @@ namespace Tervisipaevik_Daria_Valeria.View
                     HeightRequest = 50,
                     WidthRequest = 50,
                     Aspect = Aspect.Fill,
-                    BackgroundColor = Colors.Transparent, // Прозрачный фон
+                    BackgroundColor = Colors.Transparent, 
          
                 };
                 tujuImage.SetBinding(Image.SourceProperty, "TujuImageSource");
@@ -148,15 +148,6 @@ namespace Tervisipaevik_Daria_Valeria.View
 
                     }
                 };
-                // Градиентный фон для ячейки
-                var gradient = new LinearGradientBrush
-                {
-                    GradientStops = new GradientStopCollection
-                    {
-                        new GradientStop { Color = Colors.LightBlue, Offset = 0.0F },
-                        new GradientStop { Color = Colors.LightCoral, Offset = 1.0F },
-                    }
-                };
 
                 var cell = new ViewCell
                 {
@@ -165,7 +156,6 @@ namespace Tervisipaevik_Daria_Valeria.View
                         Orientation = StackOrientation.Horizontal,
                         Spacing = 15,
                         Padding = 15,
-                        Background = gradient, 
                         Children = { tujuImage, energiaImage, lbl_kuupaev, sudaImage }
                     }
                 };
@@ -176,7 +166,7 @@ namespace Tervisipaevik_Daria_Valeria.View
             enesetunneListView.ItemSelected += EnesetunneListView_ItemSelected;
             btn_salvesta.Clicked += Btn_salvesta_Clicked;
             btn_kustuta.Clicked += Btn_kustuta_Clicked;
-            btn_selge.Clicked += Btn_selge_Clicked;
+            btn_puhastata.Clicked += Btn_puhastata_Clicked;
 
             Content = new ScrollView
             {
@@ -193,21 +183,22 @@ namespace Tervisipaevik_Daria_Valeria.View
                         sl_energia,
                         btn_salvesta,
                         btn_kustuta,
-                        btn_selge,
+                        btn_puhastata,
                         enesetunneListView
                     }
                 }
             };
             NaitaAndmeid();
         }
-        private void Btn_selge_Clicked(object? sender, EventArgs e)
+        private void Btn_puhastata_Clicked(object? sender, EventArgs e)
         {
             SelgeForm();
         }
 
-        private void Btn_salvesta_Clicked(object? sender, EventArgs e)
+        private async void Btn_salvesta_Clicked(object? sender, EventArgs e)
         {
-            if (selectedTuju == 0 || selectedEnergia == 0) return;
+            if (selectedTuju == 0 || selectedEnergia == 0)
+                return;
 
             if (selectedItem == null)
                 selectedItem = new EnesetunneClass();
@@ -217,6 +208,21 @@ namespace Tervisipaevik_Daria_Valeria.View
             selectedItem.Kuupaev = dp_kuupaev.Date;
 
             database.SaveEnesetunne(selectedItem);
+
+            string sonum = "";
+
+            if (selectedTuju >= 4 && selectedEnergia >= 4)
+                sonum = "Super! Tundub, et sul on suurepärane päev! 😄⚡";
+            else if (selectedTuju <= 2 && selectedEnergia <= 2)
+                sonum = "Püüa puhata ja hoolitse enda eest täna.";
+            else if (selectedTuju >= 4 && selectedEnergia <= 2)
+                sonum = "Hea tuju, aga oled väsinud – aeg hellitada end ☕🎶";
+            else if (selectedTuju <= 2 && selectedEnergia >= 4)
+                sonum = "Sul on energiat, aga tuju vajab turgutust. Proovi midagi toredat teha! 🚶🎨";
+
+            if (!string.IsNullOrEmpty(sonum))
+                await DisplayAlert("Sõnum sulle", sonum, "OK");
+
             SelgeForm();
             NaitaAndmeid();
         }

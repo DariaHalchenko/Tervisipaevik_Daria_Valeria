@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using Microsoft.Maui.Layouts;
+using System.Globalization;
 using Tervisipaevik_Daria_Valeria.Database;
 using Tervisipaevik_Daria_Valeria.Models;
 
@@ -19,7 +20,8 @@ public partial class HommikusookPage : ContentPage
     private TableView tableview;
     private TableSection fotoSection;
 
-    private Button btn_salvesta, btn_kustuta, btn_puhastada, btn_pildista, btn_valifoto;
+    private ImageButton btn_salvesta, btn_pildista, btn_valifoto, btn_menu;
+    private StackLayout sl;
 
     public HommikusookPage()
     {
@@ -37,17 +39,47 @@ public partial class HommikusookPage : ContentPage
         dp_kuupaev = new DatePicker { Date = DateTime.Now };
         tp_kallaaeg = new TimePicker { Time = TimeSpan.FromHours(8) };
 
-        btn_salvesta = new Button { Text = "Salvesta" };
-        btn_kustuta = new Button { Text = "Kustuta", IsVisible = false };
-        btn_puhastada = new Button { Text = "Uus sisestus" };
-        btn_pildista = new Button { Text = "Tee foto" };
-        btn_valifoto = new Button { Text = "Vali foto" };
+        btn_pildista = new ImageButton
+        {
+            Source = "foto.png",
+            BackgroundColor = Colors.Transparent,
+            HeightRequest = 50,
+            WidthRequest = 50
+        };
+        btn_valifoto = new ImageButton
+        {
+            Source = "valifoto.png",
+            BackgroundColor = Colors.Transparent,
+            HeightRequest = 50,
+            WidthRequest = 50
+        };
+        btn_salvesta = new ImageButton
+        {
+            Source = "salvesta.png",
+            BackgroundColor = Colors.Transparent,
+            HeightRequest = 50,
+            WidthRequest = 50
+        };
+
+        btn_menu = new ImageButton
+        {
+            Source = "menu.png", 
+            BackgroundColor = Colors.Transparent,
+            HeightRequest = 60,
+            WidthRequest = 60,
+            CornerRadius = 30,
+            Shadow = new Shadow
+            {
+                Opacity = 0.3f,
+                Radius = 10,
+                Offset = new Point(3, 3)
+            }
+        };
 
         btn_salvesta.Clicked += Btn_salvesta_Clicked;
-        btn_kustuta.Clicked += Btn_kustuta_Clicked;
-        btn_puhastada.Clicked += Btn_puhastada_Clicked;
         btn_pildista.Clicked += Btn_pildista_Clicked;
         btn_valifoto.Clicked += Btn_valifoto_Clicked;
+        btn_menu.Clicked += Btn_menu_Clicked;
 
         img = new Image();
 
@@ -68,46 +100,42 @@ public partial class HommikusookPage : ContentPage
                     ec_susivesikud,
                     ec_kalorid
                 },
-                fotoSection,
-                new TableSection("Tegevused")
-                {
-                    new ViewCell
-                    {
-                        View = new StackLayout
-                        {
-                            Orientation = StackOrientation.Horizontal,
-                            HorizontalOptions = LayoutOptions.Center,
-                            Children = { btn_salvesta, btn_kustuta, btn_puhastada }
-                        }
-                    }
-                },
-                new TableSection("FOTO")
-                {
-                    new ViewCell
-                    {
-                        View = new StackLayout
-                        {
-                            Orientation = StackOrientation.Horizontal,
-                            HorizontalOptions = LayoutOptions.Center,
-                            Children = { btn_valifoto, btn_pildista }
-                        }
-                    }
-                }
+                fotoSection
             }
         };
 
-        Content = new ScrollView
+       
+        sl = new StackLayout
         {
-            Content = new StackLayout
-            {
-                Padding = 10,
-                Children =
-                {
-                    tableview
-                }
-            }
+            Orientation = StackOrientation.Horizontal,
+            Spacing = 15,
+            IsVisible = false,
+            Children = { btn_valifoto, btn_pildista, btn_salvesta },
+            Margin = new Thickness(0, 0, 0, 10)
         };
+
+        var absolutelayout = new AbsoluteLayout();
+
+        AbsoluteLayout.SetLayoutFlags(tableview, AbsoluteLayoutFlags.All);
+        AbsoluteLayout.SetLayoutBounds(tableview, new Rect(0, 0, 1, 1));
+        absolutelayout.Children.Add(tableview);
+
+        AbsoluteLayout.SetLayoutFlags(sl, AbsoluteLayoutFlags.PositionProportional);
+        AbsoluteLayout.SetLayoutBounds(sl, new Rect(0.60, 0.95, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
+        absolutelayout.Children.Add(sl);
+
+        AbsoluteLayout.SetLayoutFlags(btn_menu, AbsoluteLayoutFlags.PositionProportional);
+        AbsoluteLayout.SetLayoutBounds(btn_menu, new Rect(0.95, 0.95, 60, 60));
+        absolutelayout.Children.Add(btn_menu);
+
+        Content = absolutelayout;
     }
+
+    private void Btn_menu_Clicked(object sender, EventArgs e)
+    {
+        sl.IsVisible = !sl.IsVisible;
+    }
+
     private void Btn_puhastada_Clicked(object sender, EventArgs e) => ClearForm();
 
     private async void Btn_valifoto_Clicked(object sender, EventArgs e)
@@ -142,14 +170,14 @@ public partial class HommikusookPage : ContentPage
 
             File.WriteAllBytes(lisafoto, fotoBytes);
 
-            img.Source = ImageSource.FromFile(lisafoto);  
+            img.Source = ImageSource.FromFile(lisafoto);
 
             fotoSection.Clear();
             var imageViewCell = new ViewCell
             {
-                View = img  
+                View = img
             };
-            fotoSection.Add(imageViewCell);  
+            fotoSection.Add(imageViewCell);
 
             await Shell.Current.DisplayAlert("Edu", "Foto on edukalt salvestatud", "OK");
         }
@@ -177,15 +205,6 @@ public partial class HommikusookPage : ContentPage
         ClearForm();
     }
 
-    private void Btn_kustuta_Clicked(object? sender, EventArgs e)
-    {
-        if (selectedItem != null)
-        {
-            database.DeleteHommikusook(selectedItem.Hommikusook_id);
-            ClearForm();
-        }
-    }
-
     private void ClearForm()
     {
         selectedItem = null;
@@ -193,20 +212,7 @@ public partial class HommikusookPage : ContentPage
         ec_roaNimi.Text = ec_valgud.Text = ec_rasvad.Text = ec_susivesikud.Text = ec_kalorid.Text = string.Empty;
         dp_kuupaev.Date = DateTime.Now;
         tp_kallaaeg.Time = TimeSpan.FromHours(8);
-        btn_kustuta.IsVisible = false;
         fotoSection.Clear();
-    }
-
-    public class ByteArrayToImageSourceConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is byte[] bytes && bytes.Length > 0)
-                return ImageSource.FromStream(() => new MemoryStream(bytes));
-            return null;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-            => throw new NotImplementedException();
+        sl.IsVisible = false;
     }
 }
