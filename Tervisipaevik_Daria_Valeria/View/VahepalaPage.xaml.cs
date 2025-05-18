@@ -20,7 +20,7 @@ public partial class VahepalaPage : ContentPage
     private TableView tableview;
     private TableSection fotoSection;
 
-    private ImageButton btn_salvesta, btn_pildista, btn_valifoto, btn_menu;
+    private ImageButton btn_salvesta, btn_pildista, btn_valifoto, btn_menu, btn_vesi, btn_trener;
     private StackLayout sl;
 
     public VahepalaPage()
@@ -43,30 +43,45 @@ public partial class VahepalaPage : ContentPage
         {
             Source = "foto.png",
             BackgroundColor = Colors.Transparent,
-            HeightRequest = 50,
-            WidthRequest = 50
+            HeightRequest = 45,
+            WidthRequest = 45
         };
         btn_valifoto = new ImageButton
         {
             Source = "valifoto.png",
             BackgroundColor = Colors.Transparent,
-            HeightRequest = 50,
-            WidthRequest = 50
+            HeightRequest = 45,
+            WidthRequest = 45
         };
         btn_salvesta = new ImageButton
         {
             Source = "salvesta.png",
             BackgroundColor = Colors.Transparent,
-            HeightRequest = 50,
-            WidthRequest = 50
+            HeightRequest = 45,
+            WidthRequest = 45
+        };
+
+        btn_vesi = new ImageButton
+        {
+            Source = "vesi.png",
+            BackgroundColor = Colors.Transparent,
+            HeightRequest = 45,
+            WidthRequest = 45
+        };
+        btn_trener = new ImageButton
+        {
+            Source = "trener.png",
+            BackgroundColor = Colors.Transparent,
+            HeightRequest = 45,
+            WidthRequest = 45
         };
 
         btn_menu = new ImageButton
         {
             Source = "menu.png",
             BackgroundColor = Colors.Transparent,
-            HeightRequest = 60,
-            WidthRequest = 60,
+            HeightRequest = 55,
+            WidthRequest = 55,
             CornerRadius = 30,
             Shadow = new Shadow
             {
@@ -80,6 +95,8 @@ public partial class VahepalaPage : ContentPage
         btn_pildista.Clicked += Btn_pildista_Clicked;
         btn_valifoto.Clicked += Btn_valifoto_Clicked;
         btn_menu.Clicked += Btn_menu_Clicked;
+        btn_vesi.Clicked += Btn_vesi_Clicked;
+        btn_trener.Clicked += Btn_trener_Clicked;
 
         img = new Image();
 
@@ -110,7 +127,7 @@ public partial class VahepalaPage : ContentPage
             Orientation = StackOrientation.Horizontal,
             Spacing = 15,
             IsVisible = false,
-            Children = { btn_valifoto, btn_pildista, btn_salvesta },
+            Children = { btn_valifoto, btn_pildista, btn_salvesta, btn_vesi, btn_trener},
             Margin = new Thickness(0, 0, 0, 10)
         };
 
@@ -121,16 +138,26 @@ public partial class VahepalaPage : ContentPage
         absolutelayout.Children.Add(tableview);
 
         AbsoluteLayout.SetLayoutFlags(sl, AbsoluteLayoutFlags.PositionProportional);
-        AbsoluteLayout.SetLayoutBounds(sl, new Rect(0.60, 0.95, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
+        AbsoluteLayout.SetLayoutBounds(sl, new Rect(0.25, 0.95, AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize));
         absolutelayout.Children.Add(sl);
 
         AbsoluteLayout.SetLayoutFlags(btn_menu, AbsoluteLayoutFlags.PositionProportional);
         AbsoluteLayout.SetLayoutBounds(btn_menu, new Rect(0.95, 0.95, 60, 60));
         absolutelayout.Children.Add(btn_menu);
 
+
         Content = absolutelayout;
     }
 
+    private async void Btn_trener_Clicked(object? sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new TreeningudFotoPage());
+    }
+
+    private async void Btn_vesi_Clicked(object? sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new VeejalgiminePage());
+    }
     private void Btn_menu_Clicked(object sender, EventArgs e)
     {
         sl.IsVisible = !sl.IsVisible;
