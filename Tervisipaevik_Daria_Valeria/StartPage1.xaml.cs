@@ -79,7 +79,7 @@ public partial class StartPage1 : ContentPage
         var carousel = new CarouselView
         {
             ItemsSource = toidud,
-            HeightRequest = 300,
+            HeightRequest = 380,
             ItemTemplate = new DataTemplate(() =>
             {
                 var dateLabel = new Label
@@ -151,32 +151,36 @@ public partial class StartPage1 : ContentPage
         btn_hommikusook = new ImageButton
         {
             Source = "hommikusook.jpg",
-            WidthRequest = 150,
-            HeightRequest = 150
+            WidthRequest = 100,
+            HeightRequest = 100,
+            Margin = new Thickness(0, 20, 0, 0)
         };
         btn_hommikusook.Clicked += Btn_hommikusook_Clicked;
 
         btn_louna = new ImageButton
         {
             Source = "louna.jpg",
-            WidthRequest = 150,
-            HeightRequest = 150
+            WidthRequest = 100,
+            HeightRequest = 100,
+            Margin = new Thickness(0, 20, 0, 0)
         };
         btn_louna.Clicked += Btn_louna_Clicked;
 
         btn_ohtusook = new ImageButton
         {
             Source = "ohtusook.jpg",
-            WidthRequest = 150,
-            HeightRequest = 150
+            WidthRequest = 100,
+            HeightRequest = 100,
+            Margin = new Thickness(0, 20, 0, 0)
         };
         btn_ohtusook.Clicked += Btn_ohtusook_Clicked;
 
         btn_vahepala = new ImageButton
         {
             Source = "vahepala.jpg",
-            WidthRequest = 150,
-            HeightRequest = 150
+            WidthRequest = 100,
+            HeightRequest = 100,
+            Margin = new Thickness(0, 20, 0, 0)
         };
         btn_vahepala.Clicked += Btn_vahepala_Clicked;
 

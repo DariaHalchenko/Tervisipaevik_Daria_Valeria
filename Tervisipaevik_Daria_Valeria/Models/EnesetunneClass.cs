@@ -15,7 +15,6 @@ namespace Tervisipaevik_Daria_Valeria.Models
         public DateTime Kuupaev { get; set; }
         public int Tuju { get; set; }
         public int Energia { get; set; }
-        //public string Markus { get; set; }
         public string TujuImageSource => $"tuju{Tuju}.PNG";
         public string EnergiaImageSource => "energia.jpg";  
     }

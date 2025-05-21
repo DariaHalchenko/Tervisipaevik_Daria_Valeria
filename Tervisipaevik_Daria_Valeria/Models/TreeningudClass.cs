@@ -13,7 +13,6 @@ namespace Tervisipaevik_Daria_Valeria.Models
         [PrimaryKey, AutoIncrement, Column("_id")]
         public int Treeningud_id { get; set; }
         public string Treeningu_nimi { get; set; }
-        public DateTime Kuupaev { get; set; }
         public TimeSpan Kallaaeg { get; set; }
         public string Treeningu_tuup { get; set; }
         public string Kirjeldus { get; set; }

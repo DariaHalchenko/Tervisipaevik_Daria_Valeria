@@ -15,7 +15,7 @@ namespace Tervisipaevik_Daria_Valeria.View
 
         ListView enesetunneListView;
         DatePicker dp_kuupaev;
-        Button btn_salvesta, btn_kustuta, btn_puhastata;
+        Button btn_salvesta, btn_kustuta, btn_puhastata, btn_hingeohk;
 
         StackLayout sl_tuju, sl_energia;
         int selectedTuju = 0;
@@ -30,8 +30,8 @@ namespace Tervisipaevik_Daria_Valeria.View
 
             Title = "Enesetunne";
 
-            dp_kuupaev = new DatePicker 
-            { 
+            dp_kuupaev = new DatePicker
+            {
                 Date = DateTime.Now,
                 BackgroundColor = Colors.LightBlue,
                 TextColor = Colors.White,
@@ -47,6 +47,7 @@ namespace Tervisipaevik_Daria_Valeria.View
             btn_salvesta = new Button { Text = "Salvesta" };
             btn_kustuta = new Button { Text = "Kustuta", IsVisible = false };
             btn_puhastata = new Button { Text = "Uus sisestus" };
+            btn_hingeohk = new Button { Text = "Hingamise taastamine", IsVisible = false };
 
             // TUJU (эмоции)
             sl_tuju = new StackLayout { Orientation = StackOrientation.Horizontal };
@@ -67,6 +68,7 @@ namespace Tervisipaevik_Daria_Valeria.View
                     var image = s as Image;
                     await image.ScaleTo(1.2, 100, Easing.CubicInOut);
                     await image.ScaleTo(1.0, 100, Easing.CubicInOut);
+                    KontrolliHingeohkNuppu();
                 };
                 img.GestureRecognizers.Add(tap);
                 sl_tuju.Children.Add(img);
@@ -92,6 +94,7 @@ namespace Tervisipaevik_Daria_Valeria.View
                     var image = s as Image;
                     await image.ScaleTo(1.2, 100, Easing.CubicInOut);
                     await image.ScaleTo(1.0, 100, Easing.CubicInOut);
+                    KontrolliHingeohkNuppu();
                 };
                 img.GestureRecognizers.Add(tap);
                 sl_energia.Children.Add(img);
@@ -106,8 +109,8 @@ namespace Tervisipaevik_Daria_Valeria.View
                     HeightRequest = 50,
                     WidthRequest = 50,
                     Aspect = Aspect.Fill,
-                    BackgroundColor = Colors.Transparent, 
-         
+                    BackgroundColor = Colors.Transparent,
+
                 };
                 tujuImage.SetBinding(Image.SourceProperty, "TujuImageSource");
 
@@ -167,6 +170,7 @@ namespace Tervisipaevik_Daria_Valeria.View
             btn_salvesta.Clicked += Btn_salvesta_Clicked;
             btn_kustuta.Clicked += Btn_kustuta_Clicked;
             btn_puhastata.Clicked += Btn_puhastata_Clicked;
+            btn_hingeohk.Clicked += Btn_hingeohk_Clicked;
 
             Content = new ScrollView
             {
@@ -184,12 +188,99 @@ namespace Tervisipaevik_Daria_Valeria.View
                         btn_salvesta,
                         btn_kustuta,
                         btn_puhastata,
+                        btn_hingeohk,
                         enesetunneListView
                     }
                 }
             };
             NaitaAndmeid();
         }
+
+        private async void Btn_hingeohk_Clicked(object? sender, EventArgs e)
+        {
+            var popupPage = new ContentPage
+            {
+                BackgroundColor = Color.FromRgba(0, 0, 0, 0.7),
+                Padding = 20
+            };
+
+            var timerLabel = new Label
+            {
+                Text = "30",
+                FontSize = 24,
+                TextColor = Colors.White,
+                HorizontalOptions = LayoutOptions.Center
+            };
+
+            var kopsudImage = new Image
+            {
+                Source = "kopsud.png",
+                WidthRequest = 200,
+                HeightRequest = 200,
+                Aspect = Aspect.AspectFit
+            };
+            kopsudImage.SetBinding(IsVisibleProperty, new Binding("Energia", BindingMode.Default, converter: new EnergiaToHeartVisibilityConverter()));
+
+            kopsudImage.Loaded += async (s, e) =>
+            {
+                while (true)
+                {
+                    await kopsudImage.ScaleTo(1.2, 2000, Easing.SinInOut);
+                    await kopsudImage.ScaleTo(1.0, 2000, Easing.SinInOut);
+
+                }
+            };
+
+            var btn_sule = new Button
+            {
+                Text = "Sulge",
+                Margin = new Thickness(0, 20, 0, 0)
+            };
+            btn_sule.Clicked += Btn_sule_Clicked;
+
+            // Add elements to the popup
+            popupPage.Content = new StackLayout
+            {
+                VerticalOptions = LayoutOptions.Center,
+                HorizontalOptions = LayoutOptions.Center,
+                Children = {
+            new Label {
+                Text = "Hingamise harjutus",
+                FontSize = 20,
+                TextColor = Colors.White,
+                HorizontalOptions = LayoutOptions.Center
+            },
+            timerLabel,
+            kopsudImage,
+            btn_sule
+        }
+            };
+
+            int secondsRemaining = 30;
+            Device.StartTimer(TimeSpan.FromSeconds(1), () =>
+            {
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    secondsRemaining--;
+                    timerLabel.Text = secondsRemaining.ToString();
+
+                    if (secondsRemaining <= 0)
+                    {
+                        timerLabel.Text = "Valmis!";
+                    }
+                });
+
+                return secondsRemaining > 0;
+            });
+
+            await Application.Current.MainPage.Navigation.PushModalAsync(popupPage);
+        }
+
+        private void Btn_sule_Clicked(object? sender, EventArgs e)
+        {
+            Application.Current.MainPage.Navigation.PopModalAsync();
+        }
+
         private void Btn_puhastata_Clicked(object? sender, EventArgs e)
         {
             SelgeForm();
@@ -264,13 +355,14 @@ namespace Tervisipaevik_Daria_Valeria.View
             dp_kuupaev.Date = DateTime.Now;
             enesetunneListView.SelectedItem = null;
             btn_kustuta.IsVisible = false;
+            btn_hingeohk.IsVisible = false;
         }
         public class EnergiaToHeartVisibilityConverter : IValueConverter
         {
             public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             {
                 int energia = (int)value;
-                return energia >= 2; 
+                return energia >= 2;
             }
 
             public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -278,5 +370,10 @@ namespace Tervisipaevik_Daria_Valeria.View
                 throw new NotImplementedException();
             }
         }
+        private void KontrolliHingeohkNuppu()
+        {
+            btn_hingeohk.IsVisible = (selectedEnergia >= 1 && (selectedTuju == 1 || selectedTuju == 2));
+        }
+
     }
 }
