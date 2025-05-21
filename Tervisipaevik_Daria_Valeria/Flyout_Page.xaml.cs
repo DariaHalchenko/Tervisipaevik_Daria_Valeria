@@ -17,9 +17,33 @@ namespace Tervisipaevik_Daria_Valeria
                 IsPresented = false;
         }
 
-        private void btnOhtusookPage_Clicked(object sender, EventArgs e)
+        private void btnHommikusookFotoPage_Clicked(object sender, EventArgs e)
         {
-            Detail = new NavigationPage(new OhtusookPage());
+            Detail = new NavigationPage(new HommikusookFotoPage());
+            if (!((IFlyoutPageController)this).ShouldShowSplitMode)
+                IsPresented = false;
+        }
+        private void btnLounasookFotoPage_Clicked(object sender, EventArgs e)
+        {
+            Detail = new NavigationPage(new LounasookFotoPage());
+            if (!((IFlyoutPageController)this).ShouldShowSplitMode)
+                IsPresented = false;
+        }
+        private void btnOhtusookFotoPage_Clicked(object sender, EventArgs e)
+        {
+            Detail = new NavigationPage(new OhtusookFotoPage());
+            if (!((IFlyoutPageController)this).ShouldShowSplitMode)
+                IsPresented = false;
+        }
+        private void btnVahepalaFotoPage_Clicked(object sender, EventArgs e)
+        {
+            Detail = new NavigationPage(new VahepalaFotoPage());
+            if (!((IFlyoutPageController)this).ShouldShowSplitMode)
+                IsPresented = false;
+        }
+        private void btnTreeningudFotoPage_Clicked(object sender, EventArgs e)
+        {
+            Detail = new NavigationPage(new TreeningudFotoPage());
             if (!((IFlyoutPageController)this).ShouldShowSplitMode)
                 IsPresented = false;
         }
@@ -30,16 +54,9 @@ namespace Tervisipaevik_Daria_Valeria
             if (!((IFlyoutPageController)this).ShouldShowSplitMode)
                 IsPresented = false;
         }
-
-        private void btnTreeningudPage_Clicked(object sender, EventArgs e)
+        private void btnEnesetunnePage_Clicked(object sender, EventArgs e)
         {
-            Detail = new NavigationPage(new TreeningudPage());
-            if (!((IFlyoutPageController)this).ShouldShowSplitMode)
-                IsPresented = false;
-        }
-        private void btnTreeningudFotoPage_Clicked(object sender, EventArgs e)
-        {
-            Detail = new NavigationPage(new TreeningudFotoPage());
+            Detail = new NavigationPage(new EnesetunnePage());
             if (!((IFlyoutPageController)this).ShouldShowSplitMode)
                 IsPresented = false;
         }

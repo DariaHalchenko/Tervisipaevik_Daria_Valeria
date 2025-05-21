@@ -20,3 +20,6 @@ namespace Tervisipaevik_Daria_Valeria.Models
         public string EnergiaImageSource => "energia.jpg";  
     }
 }
+
+
+

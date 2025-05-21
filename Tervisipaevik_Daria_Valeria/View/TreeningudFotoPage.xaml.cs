@@ -37,9 +37,6 @@ public partial class TreeningudFotoPage : ContentPage
                 var tyyppLabel = new Label();
                 tyyppLabel.SetBinding(Label.TextProperty, new Binding("Treeningu_tuup", stringFormat: "Tüüp: {0}"));
 
-                var kuupaevLabel = new Label();
-                kuupaevLabel.SetBinding(Label.TextProperty, new Binding("Kuupaev", stringFormat: "Kuupäev: {0:dd.MM.yyyy}"));
-
                 var kellaaegLabel = new Label();
                 kellaaegLabel.SetBinding(Label.TextProperty, new Binding("Kallaaeg", stringFormat: "Kellaaeg: {0}"));
 
@@ -92,7 +89,6 @@ public partial class TreeningudFotoPage : ContentPage
                         {
                             nimiLabel,
                             tyyppLabel,
-                            kuupaevLabel,
                             kellaaegLabel,
                             sammudLabel,
                             kaloridLabel,
