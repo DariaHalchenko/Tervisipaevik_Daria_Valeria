@@ -15,6 +15,7 @@ public partial class TreeningudPage : ContentPage
     private DatePicker dp_kuupaev;
     private TimePicker tp_kallaaeg;
     private Image img;
+    private Switch redirectSwitch;
 
     private TableView tableview;
     private TableSection fotoSection;
@@ -29,6 +30,7 @@ public partial class TreeningudPage : ContentPage
 
         Title = "Treeningud";
 
+        // Инициализация элементов управления
         ec_treeninguNimi = new EntryCell { Label = "Treeningu nimi", Placeholder = "nt. Jooksmine" };
         ec_tuup = new EntryCell { Label = "Tüüp", Placeholder = "nt. Kardio" };
         ec_kirjeldus = new EntryCell { Label = "Kirjeldus" };
@@ -38,6 +40,7 @@ public partial class TreeningudPage : ContentPage
         dp_kuupaev = new DatePicker { Date = DateTime.Now };
         tp_kallaaeg = new TimePicker { Time = TimeSpan.FromHours(8) };
 
+        // Кнопки
         btn_salvesta = new Button { Text = "Salvesta" };
         btn_kustuta = new Button { Text = "Kustuta", IsVisible = false };
         btn_puhastada = new Button { Text = "Uus sisestus" };
@@ -46,6 +49,15 @@ public partial class TreeningudPage : ContentPage
         btn_hide = new Button { Text = "Näita loendit" };
         btn_usertreeningud = new Button { Text = "Näita carousel" };
 
+        // Переключатель для перехода на EnesetunnePage
+        redirectSwitch = new Switch
+        {
+            HorizontalOptions = LayoutOptions.End,
+            ThumbColor = Colors.DarkViolet,
+            OnColor = Colors.LightGreen
+        };
+
+        // Обработчики событий
         btn_salvesta.Clicked += Btn_salvesta_Clicked;
         btn_kustuta.Clicked += Btn_kustuta_Clicked;
         btn_puhastada.Clicked += Btn_puhastada_Clicked;
@@ -53,11 +65,13 @@ public partial class TreeningudPage : ContentPage
         btn_valifoto.Clicked += Btn_valifoto_Clicked;
         btn_hide.Clicked += Btn_hide_Clicked;
         btn_usertreeningud.Clicked += Btn_usertreeningud_Clicked;
+        redirectSwitch.Toggled += RedirectSwitch_Toggled;
 
         img = new Image();
 
         fotoSection = new TableSection("Foto");
 
+        // Создание таблицы с элементами управления
         tableview = new TableView
         {
             Intent = TableIntent.Form,
@@ -81,8 +95,21 @@ public partial class TreeningudPage : ContentPage
                         View = new StackLayout
                         {
                             Orientation = StackOrientation.Horizontal,
-                            HorizontalOptions = LayoutOptions.Center,
-                            Children = { btn_salvesta, btn_kustuta, btn_puhastada, btn_usertreeningud }
+                            Spacing = 10,
+                            Children =
+                            {
+                                new Label
+                                {
+                                    Text = "Minu enesetunne",
+                                    VerticalOptions = LayoutOptions.Center,
+                                    FontSize = 14
+                                },
+                                redirectSwitch,
+                                btn_salvesta,
+                                btn_kustuta,
+                                btn_puhastada,
+                                btn_usertreeningud
+                            }
                         }
                     }
                 },
@@ -101,6 +128,7 @@ public partial class TreeningudPage : ContentPage
             }
         };
 
+        // Список тренировок
         treeningudListView = new ListView
         {
             SeparatorColor = Colors.DarkViolet,
@@ -144,6 +172,7 @@ public partial class TreeningudPage : ContentPage
 
         treeningudListView.ItemSelected += TreeningudListView_ItemSelected;
 
+        // Основной макет страницы
         Content = new ScrollView
         {
             Content = new StackLayout
@@ -162,6 +191,17 @@ public partial class TreeningudPage : ContentPage
         AndmeteLaadimine();
     }
 
+    private async void RedirectSwitch_Toggled(object sender, ToggledEventArgs e)
+    {
+        if (e.Value) // Если переключатель включен
+        {
+            await Navigation.PushAsync(new EnesetunnePage());
+            // Возвращаем переключатель в исходное положение после перехода
+            Device.BeginInvokeOnMainThread(() => redirectSwitch.IsToggled = false);
+        }
+    }
+
+    // Остальные методы остаются без изменений
     private async void Btn_usertreeningud_Clicked(object? sender, EventArgs e)
     {
         await Navigation.PushAsync(new TreeningudFotoPage());
@@ -324,4 +364,3 @@ public partial class TreeningudPage : ContentPage
             => throw new NotImplementedException();
     }
 }
-

@@ -7,6 +7,7 @@ namespace Tervisipaevik_Daria_Valeria.View;
 public partial class TreeningudFotoPage : ContentPage
 {
     private readonly TreeningudDatabase database;
+    private Switch redirectSwitch;
 
     public TreeningudFotoPage()
     {
@@ -19,6 +20,7 @@ public partial class TreeningudFotoPage : ContentPage
             .OrderByDescending(t => t.Kuupaev)
             .ToList();
 
+        // Создаем карусель
         var carousel = new CarouselView
         {
             ItemsSource = treeningud,
@@ -56,7 +58,7 @@ public partial class TreeningudFotoPage : ContentPage
 
                 var juhisLabel = new Label
                 {
-                    FontSize = 10,
+                    FontSize = 14,
                     FontAttributes = FontAttributes.Bold,
                     HorizontalOptions = LayoutOptions.Center,
                     Text = "Video vaatamiseks klõpsake pildil"
@@ -87,26 +89,69 @@ public partial class TreeningudFotoPage : ContentPage
                         Padding = new Thickness(20),
                         Spacing = 12,
                         Children =
-                            {
-                                nimiLabel,
-                                tyyppLabel,
-                                kuupaevLabel,
-                                kellaaegLabel,
-                                sammudLabel,
-                                kaloridLabel,
-                                image,
-                                juhisLabel
-                            }
+                        {
+                            nimiLabel,
+                            tyyppLabel,
+                            kuupaevLabel,
+                            kellaaegLabel,
+                            sammudLabel,
+                            kaloridLabel,
+                            image,
+                            juhisLabel
+                        }
                     }
                 };
             })
         };
 
-        Content = carousel;
+        // Создаем переключатель с текстом
+        redirectSwitch = new Switch
+        {
+            HorizontalOptions = LayoutOptions.End,
+            ThumbColor = Colors.DarkViolet,
+            OnColor = Colors.LightGreen
+        };
+        redirectSwitch.Toggled += RedirectSwitch_Toggled;
+
+        var switchLayout = new StackLayout
+        {
+            Orientation = StackOrientation.Horizontal,
+            HorizontalOptions = LayoutOptions.Center,
+            Spacing = 10,
+            Padding = new Thickness(0, 10),
+            Children =
+            {
+                new Label
+                {
+                    Text = "Minu enesetunne", 
+                    VerticalOptions = LayoutOptions.Center,
+                    FontSize = 14
+                },
+                redirectSwitch
+            }
+        };
+
+        // Основной макет страницы
+        Content = new StackLayout
+        {
+            Children =
+            {
+                carousel,
+                switchLayout
+            }
+        };
+    }
+
+    private async void RedirectSwitch_Toggled(object sender, ToggledEventArgs e)
+    {
+        if (e.Value)
+        {
+            await Navigation.PushAsync(new EnesetunnePage());
+            Device.BeginInvokeOnMainThread(() => redirectSwitch.IsToggled = false);
+        }
     }
 }
 
-// Конвертер из byte[] в ImageSource
 public class ByteArrayToImageSourceConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

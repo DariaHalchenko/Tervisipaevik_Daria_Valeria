@@ -7,7 +7,7 @@ namespace Tervisipaevik_Daria_Valeria
         {
             InitializeComponent();
 
-            MainPage = new AppShell();
+            MainPage = new Flyout_Page();
         }
     }
 }
