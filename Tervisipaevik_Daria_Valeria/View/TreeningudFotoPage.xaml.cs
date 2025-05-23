@@ -17,7 +17,7 @@ public partial class TreeningudFotoPage : ContentPage
         database = new TreeningudDatabase(dbPath);
 
         var treeningud = database.GetTreeningud()
-            .OrderByDescending(t => t.Kuupaev)
+            .OrderByDescending(t => t.Kallaaeg)
             .ToList();
 
         // Создаем карусель
