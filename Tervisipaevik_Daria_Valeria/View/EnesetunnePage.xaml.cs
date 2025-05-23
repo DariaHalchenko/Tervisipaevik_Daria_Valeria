@@ -238,7 +238,6 @@ namespace Tervisipaevik_Daria_Valeria.View
             };
             btn_sule.Clicked += Btn_sule_Clicked;
 
-            // Add elements to the popup
             popupPage.Content = new StackLayout
             {
                 VerticalOptions = LayoutOptions.Center,

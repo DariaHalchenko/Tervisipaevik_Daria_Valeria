@@ -12,15 +12,14 @@ public partial class VeejalgimineGrafikPage : ContentPage
     {
         Title = "Vee tarbimise graafik";
 
-        // Группируем по месяцу и году
         var groupedData = andmed
             .GroupBy(v => v.Kuupaev.ToString("MMMM yyyy"))
             .OrderBy(g => g.First().Kuupaev)
-            .Select(g => new ChartGroup
+            .Select(g => new Diagrammigrupp
             {
                 MonthYear = g.Key,
                 Data = g.OrderBy(v => v.Kuupaev)
-                        .Select(v => new ChartPoint
+                        .Select(v => new Diagrammipunkt
                         {
                             Kuupaev = v.Kuupaev.ToString("dd.MM"),
                             Kogus = v.Kogus
@@ -38,7 +37,7 @@ public partial class VeejalgimineGrafikPage : ContentPage
                     FontAttributes = FontAttributes.Bold,
                     HorizontalOptions = LayoutOptions.Center
                 };
-                label.SetBinding(Label.TextProperty, nameof(ChartGroup.MonthYear));
+                label.SetBinding(Label.TextProperty, nameof(Diagrammigrupp.MonthYear));
 
                 var chart = new SfCartesianChart();
                 chart.XAxes.Add(new CategoryAxis
@@ -52,11 +51,11 @@ public partial class VeejalgimineGrafikPage : ContentPage
 
                 var columnSeries = new ColumnSeries
                 {
-                    XBindingPath = nameof(ChartPoint.Kuupaev),
-                    YBindingPath = nameof(ChartPoint.Kogus),
+                    XBindingPath = nameof(Diagrammipunkt.Kuupaev),
+                    YBindingPath = nameof(Diagrammipunkt.Kogus),
                     EnableTooltip = true
                 };
-                columnSeries.SetBinding(ColumnSeries.ItemsSourceProperty, nameof(ChartGroup.Data));
+                columnSeries.SetBinding(ColumnSeries.ItemsSourceProperty, nameof(Diagrammigrupp.Data));
                 chart.Series.Add(columnSeries);
 
                 return new StackLayout
@@ -75,14 +74,13 @@ public partial class VeejalgimineGrafikPage : ContentPage
     }
 }
 
-// Вспомогательные классы
-public class ChartGroup
+public class Diagrammigrupp
 {
     public string MonthYear { get; set; }
-    public List<ChartPoint> Data { get; set; }
+    public List<Diagrammipunkt> Data { get; set; }
 }
 
-public class ChartPoint
+public class Diagrammipunkt
 {
     public string Kuupaev { get; set; }
     public int Kogus { get; set; }

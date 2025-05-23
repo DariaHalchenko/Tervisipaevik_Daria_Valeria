@@ -15,7 +15,7 @@ namespace Tervisipaevik_Daria_Valeria.View
         Entry kogusEntry;
         DatePicker kuupaevPicker;
         Switch aktiivneSwitch;
-        Button salvestaButton, kustutaButton, uusSisestusButton, avaGraafikButton;
+        Button btn_salvesta, btn_kustuta, btn_uusSisestus, btn_avaGraafik;
         ListView veejalgimineListView;
         BoxView bv_klaas;
         Frame f_klaas;
@@ -34,10 +34,10 @@ namespace Tervisipaevik_Daria_Valeria.View
             kuupaevPicker.DateSelected += KuupaevPicker_DateSelected;
             aktiivneSwitch = new Switch { IsToggled = true };
 
-            salvestaButton = new Button { Text = "Salvesta" };
-            kustutaButton = new Button { Text = "Kustuta", IsVisible = false };
-            uusSisestusButton = new Button { Text = "Uus sisestus" };
-            avaGraafikButton = new Button { Text = "Ava graafik" };
+            btn_salvesta = new Button { Text = "Salvesta" };
+            btn_kustuta = new Button { Text = "Kustuta", IsVisible = false };
+            btn_uusSisestus = new Button { Text = "Uus sisestus" };
+            btn_avaGraafik = new Button { Text = "Ava graafik" };
 
             veejalgimineListView = new ListView
             {
@@ -51,10 +51,10 @@ namespace Tervisipaevik_Daria_Valeria.View
             };
 
             veejalgimineListView.ItemSelected += VeejalgimineListView_ItemSelected;
-            salvestaButton.Clicked += SalvestaButton_Clicked;
-            kustutaButton.Clicked += KustutaButton_Clicked;
-            uusSisestusButton.Clicked += UusSisestusButton_Clicked;
-            avaGraafikButton.Clicked += AvaGraafikButton_Clicked;
+            btn_salvesta.Clicked += Btn_salvesta_Clicked;
+            btn_kustuta.Clicked += Btn_kustuta_Clicked;
+            btn_uusSisestus.Clicked += Btn_uusSisestus_Clicked;
+            btn_avaGraafik.Clicked += Btn_avaGraafik_Clicked;
 
             f_klaas = new Frame
             {
@@ -88,10 +88,10 @@ namespace Tervisipaevik_Daria_Valeria.View
                         kogusEntry,
                         new Label { Text = "Aktiivne" },
                         aktiivneSwitch,
-                        salvestaButton,
-                        kustutaButton,
-                        uusSisestusButton,
-                        avaGraafikButton,
+                        btn_salvesta,
+                        btn_kustuta,
+                        btn_uusSisestus,
+                        btn_avaGraafik,
                         new Label { Text = "Klaas" },
                         f_klaas,
                         veejalgimineListView
@@ -102,7 +102,7 @@ namespace Tervisipaevik_Daria_Valeria.View
             LoadData();
         }
 
-        private async void AvaGraafikButton_Clicked(object? sender, EventArgs e)
+        private async void Btn_avaGraafik_Clicked(object? sender, EventArgs e)
         {
             var andmed = database.GetVeejalgimine()
                 .OrderBy(v => v.Kuupaev)
@@ -111,13 +111,27 @@ namespace Tervisipaevik_Daria_Valeria.View
             await Navigation.PushAsync(new VeejalgimineGrafikPage(andmed));
         }
 
-
-        private void KuupaevPicker_DateSelected(object? sender, DateChangedEventArgs e)
+        private void Btn_uusSisestus_Clicked(object? sender, EventArgs e)
         {
-            LoadData();
+            ClearForm();
         }
 
-        private async void SalvestaButton_Clicked(object sender, EventArgs e)
+        private void Btn_kustuta_Clicked(object? sender, EventArgs e)
+        {
+            if (selectedItem != null)
+            {
+                var kuupaev = selectedItem.Kuupaev.Date;
+                var kirjed = database.GetVeejalgimine().Where(v => v.Kuupaev.Date == kuupaev).ToList();
+
+                foreach (var kirje in kirjed)
+                    database.DeleteVeejalgimine(kirje.Veejalgimine_id);
+
+                ClearForm();
+                LoadData();
+            }
+        }
+
+        private async void Btn_salvesta_Clicked(object? sender, EventArgs e)
         {
             if (!aktiivneSwitch.IsToggled)
             {
@@ -195,19 +209,9 @@ namespace Tervisipaevik_Daria_Valeria.View
             LoadData();
         }
 
-        private void KustutaButton_Clicked(object sender, EventArgs e)
+        private void KuupaevPicker_DateSelected(object? sender, DateChangedEventArgs e)
         {
-            if (selectedItem != null)
-            {
-                var kuupaev = selectedItem.Kuupaev.Date;
-                var kirjed = database.GetVeejalgimine().Where(v => v.Kuupaev.Date == kuupaev).ToList();
-
-                foreach (var kirje in kirjed)
-                    database.DeleteVeejalgimine(kirje.Veejalgimine_id);
-
-                ClearForm();
-                LoadData();
-            }
+            LoadData();
         }
 
         private void VeejalgimineListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
@@ -218,13 +222,8 @@ namespace Tervisipaevik_Daria_Valeria.View
                 kuupaevPicker.Date = selectedItem.Kuupaev;
                 kogusEntry.Text = selectedItem.Kogus.ToString();
                 aktiivneSwitch.IsToggled = selectedItem.Aktiivne;
-                kustutaButton.IsVisible = true;
+                btn_kustuta.IsVisible = true;
             }
-        }
-
-        private void UusSisestusButton_Clicked(object sender, EventArgs e)
-        {
-            ClearForm();
         }
 
         private void ClearForm()
@@ -234,7 +233,7 @@ namespace Tervisipaevik_Daria_Valeria.View
             kogusEntry.Text = string.Empty;
             aktiivneSwitch.IsToggled = true;
             veejalgimineListView.SelectedItem = null;
-            kustutaButton.IsVisible = false;
+            btn_kustuta.IsVisible = false;
             bv_klaas.HeightRequest = 0;
         }
 

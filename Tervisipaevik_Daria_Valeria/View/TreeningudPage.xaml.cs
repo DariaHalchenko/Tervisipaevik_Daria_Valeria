@@ -30,7 +30,6 @@ public partial class TreeningudPage : ContentPage
 
         Title = "Treeningud";
 
-        // Инициализация элементов управления
         ec_treeninguNimi = new EntryCell { Label = "Treeningu nimi", Placeholder = "nt. Jooksmine" };
         ec_tuup = new EntryCell { Label = "Tüüp", Placeholder = "nt. Kardio" };
         ec_kirjeldus = new EntryCell { Label = "Kirjeldus" };
@@ -40,7 +39,6 @@ public partial class TreeningudPage : ContentPage
         dp_kuupaev = new DatePicker { Date = DateTime.Now };
         tp_kallaaeg = new TimePicker { Time = TimeSpan.FromHours(8) };
 
-        // Кнопки
         btn_salvesta = new Button { Text = "Salvesta" };
         btn_kustuta = new Button { Text = "Kustuta", IsVisible = false };
         btn_puhastada = new Button { Text = "Uus sisestus" };
@@ -49,7 +47,6 @@ public partial class TreeningudPage : ContentPage
         btn_hide = new Button { Text = "Näita loendit" };
         btn_usertreeningud = new Button { Text = "Näita carousel" };
 
-        // Переключатель для перехода на EnesetunnePage
         redirectSwitch = new Switch
         {
             HorizontalOptions = LayoutOptions.End,
@@ -57,7 +54,6 @@ public partial class TreeningudPage : ContentPage
             OnColor = Colors.LightGreen
         };
 
-        // Обработчики событий
         btn_salvesta.Clicked += Btn_salvesta_Clicked;
         btn_kustuta.Clicked += Btn_kustuta_Clicked;
         btn_puhastada.Clicked += Btn_puhastada_Clicked;
@@ -71,7 +67,6 @@ public partial class TreeningudPage : ContentPage
 
         fotoSection = new TableSection("Foto");
 
-        // Создание таблицы с элементами управления
         tableview = new TableView
         {
             Intent = TableIntent.Form,
@@ -128,7 +123,6 @@ public partial class TreeningudPage : ContentPage
             }
         };
 
-        // Список тренировок
         treeningudListView = new ListView
         {
             SeparatorColor = Colors.DarkViolet,
@@ -172,7 +166,6 @@ public partial class TreeningudPage : ContentPage
 
         treeningudListView.ItemSelected += TreeningudListView_ItemSelected;
 
-        // Основной макет страницы
         Content = new ScrollView
         {
             Content = new StackLayout
@@ -193,15 +186,13 @@ public partial class TreeningudPage : ContentPage
 
     private async void RedirectSwitch_Toggled(object sender, ToggledEventArgs e)
     {
-        if (e.Value) // Если переключатель включен
+        if (e.Value) 
         {
             await Navigation.PushAsync(new EnesetunnePage());
-            // Возвращаем переключатель в исходное положение после перехода
             Device.BeginInvokeOnMainThread(() => redirectSwitch.IsToggled = false);
         }
     }
 
-    // Остальные методы остаются без изменений
     private async void Btn_usertreeningud_Clicked(object? sender, EventArgs e)
     {
         await Navigation.PushAsync(new TreeningudFotoPage());
@@ -261,7 +252,6 @@ public partial class TreeningudPage : ContentPage
         selectedItem.Kirjeldus = ec_kirjeldus.Text;
         selectedItem.Link = ec_link.Text;
         selectedItem.Kulutud_kalorid = int.TryParse(ec_kalorid.Text, out var kalorid) ? kalorid : 0;
-        selectedItem.Kuupaev = dp_kuupaev.Date;
         selectedItem.Kallaaeg = tp_kallaaeg.Time;
         if (fotoBytes != null)
             selectedItem.Treeningu_foto = fotoBytes;
@@ -291,7 +281,6 @@ public partial class TreeningudPage : ContentPage
             ec_kirjeldus.Text = selectedItem.Kirjeldus;
             ec_link.Text = selectedItem.Link;
             ec_kalorid.Text = selectedItem.Kulutud_kalorid.ToString();
-            dp_kuupaev.Date = selectedItem.Kuupaev;
             tp_kallaaeg.Time = selectedItem.Kallaaeg;
             btn_kustuta.IsVisible = true;
 
@@ -322,7 +311,7 @@ public partial class TreeningudPage : ContentPage
 
     public void AndmeteLaadimine()
     {
-        treeningudListView.ItemsSource = database.GetTreeningud().OrderByDescending(x => x.Kuupaev).ToList();
+        treeningudListView.ItemsSource = database.GetTreeningud().OrderByDescending(x => x.Kallaaeg).ToList();
     }
 
     public void SelgeVorm()
